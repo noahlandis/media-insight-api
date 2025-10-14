@@ -1,16 +1,13 @@
-from dotenv import load_dotenv
-load_dotenv()
-import os
-
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from routers import auth
+from settings import config
 
 app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=os.environ["OAUTH_SECRET_KEY"],
+    secret_key=config.oauth_secret_key,
     same_site="lax",       
     https_only=False,
 )

@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
+from settings import config
 
-import os
 oauth = OAuth()
 
 oauth.register(
     name='google',
-    client_id=os.environ["GOOGLE_CLIENT_ID"],
-    client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+    client_id=config.google_client_id,
+    client_secret=config.google_client_secret,
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={
         # include OIDC + your YouTube scopes
@@ -33,7 +33,7 @@ async def google_callback(request: Request):
     if user:
         request.session['user'] = user
 
-    return RedirectResponse(os.environ["FRONTEND_URL"])
+    return RedirectResponse(config.frontend_url)
 
 @router.get("/reddit")
 async def reddit():
