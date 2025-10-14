@@ -22,9 +22,8 @@ router = APIRouter(
 
 @router.get("/google")
 async def google(request: Request):
-    google = oauth.google
     redirect_uri = request.url_for("google_callback")
-    return await google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get("/google/callback")
 async def google_callback(request: Request):
