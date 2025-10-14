@@ -7,7 +7,7 @@ app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key=config.oauth_secret_key,
+    secret_key=config.oauth_secret_key.get_secret_value(),
     same_site="lax",       
     https_only=False,
 )

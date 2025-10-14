@@ -7,8 +7,8 @@ oauth = OAuth()
 
 oauth.register(
     name='google',
-    client_id=config.google_client_id,
-    client_secret=config.google_client_secret,
+    client_id=config.google_client_id.get_secret_value(),
+    client_secret=config.google_client_secret.get_secret_value(),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={
         # include OIDC + your YouTube scopes

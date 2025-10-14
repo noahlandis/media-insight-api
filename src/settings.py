@@ -1,10 +1,11 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr
 
 class Settings(BaseSettings):
-    google_client_id: str
-    google_client_secret: str
-    openai_api_key: str
-    oauth_secret_key: str
+    google_client_id: SecretStr
+    google_client_secret: SecretStr
+    openai_api_key: SecretStr
+    oauth_secret_key: SecretStr
     frontend_url: str
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
