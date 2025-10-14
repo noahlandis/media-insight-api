@@ -1,11 +1,10 @@
 from fastapi import FastAPI
+from routers import auth
 
 app = FastAPI()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+app.include_router(auth.router)
 
-@app.get("/ping")
-async def root():
-    return {"message": "pong"}
+@app.get("/")
+def root():
+    return {"message": "Hello World"}
