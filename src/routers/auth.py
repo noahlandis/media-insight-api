@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.starlette_client import OAuth, OAuthError
 from settings import config
 
 oauth = OAuth()
@@ -27,11 +27,13 @@ async def google(request: Request):
 
 @router.get("/google/callback")
 async def google_callback(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user = token.get('userinfo')
-    if user:
-        request.session['user'] = user
-
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        user = token.get('userinfo')
+        if user:
+            request.session['user'] = user
+    except OAuthError as e:
+        return RedirectResponse(f"{config.frontend_url}?error=oauth_failed")
     return RedirectResponse(config.frontend_url)
 
 @router.get("/reddit")
@@ -39,5 +41,5 @@ async def reddit():
     return {"message": "welcome to Reddit"}
 
 @router.get("/x")
-async def reddit():
+async def x():
     return {"message": "welcome to x"}
