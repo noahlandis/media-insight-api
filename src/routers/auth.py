@@ -27,14 +27,15 @@ async def google(request: Request):
 
 @router.get("/google/callback")
 async def google_callback(request: Request):
+    frontend_url = config.frontend_url
     try:
         token = await oauth.google.authorize_access_token(request)
         user = token.get('userinfo')
         if user:
             request.session['user'] = user
     except OAuthError as e:
-        return RedirectResponse(f"{config.frontend_url}?error=oauth_failed")
-    return RedirectResponse(config.frontend_url)
+        return RedirectResponse(f"{frontend_url}?error=oauth_failed")
+    return RedirectResponse(frontend_url)
 
 @router.get("/reddit")
 async def reddit():
