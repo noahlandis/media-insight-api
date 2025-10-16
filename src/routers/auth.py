@@ -43,10 +43,9 @@ async def google_callback(request: Request):
     frontend_url = config.frontend_url
     try:
         token = await oauth.google.authorize_access_token(request)
-        user = token.get('userinfo')
-        if user:
+        if 'user' not in request.session:
             request.session['user'] = {}
-            request.session['user']['google'] = token
+        request.session['user']['google'] = None
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
     return RedirectResponse(frontend_url)
@@ -58,11 +57,18 @@ async def reddit(request: Request):
     return await oauth.reddit.authorize_redirect(request, redirect_uri, duration="permanent")
 
 
-
-
 @router.get("/reddit/callback")
 async def reddit_callback(request: Request):
-    return {"message": "hi. reddit callback hit"}  
+    frontend_url = config.frontend_url
+    try:
+        token = await oauth.reddit.authorize_access_token(request)
+        if 'user' not in request.session:
+            request.session['user'] = {}
+        request.session['user']['reddit'] = None
+        print(request.session['user'])
+    except OAuthError as e:
+        return RedirectResponse(f"{frontend_url}?error=oauth_failed")
+    return RedirectResponse(frontend_url) 
     
 
 @router.get("/x")
