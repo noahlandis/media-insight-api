@@ -44,3 +44,11 @@ async def reddit():
 @router.get("/x")
 async def x():
     return {"message": "welcome to x"}
+
+@router.get("/me")
+async def get_current_user(request: Request):
+    user = request.session.get("user")
+    if not user:
+        return {"message": "no user found"}
+
+    return user
