@@ -16,6 +16,19 @@ oauth.register(
     },
 )
 
+oauth.register(
+    name="reddit",
+    client_id=config.reddit_client_id.get_secret_value(),
+    client_secret=config.reddit_client_secret.get_secret_value(),
+    access_token_url="https://www.reddit.com/api/v1/access_token",
+    authorize_url="https://www.reddit.com/api/v1/authorize",
+    api_base_url="https://oauth.reddit.com",
+    client_kwargs={
+        "scope": "identity read",
+        "token_endpoint_auth_method": "client_secret_basic",
+    },
+)
+
 router = APIRouter(
     prefix="/auth"
 )
@@ -32,14 +45,25 @@ async def google_callback(request: Request):
         token = await oauth.google.authorize_access_token(request)
         user = token.get('userinfo')
         if user:
-            request.session['user'] = user
+            request.session['user'] = {}
+            request.session['user']['google'] = token
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
     return RedirectResponse(frontend_url)
 
+
 @router.get("/reddit")
-async def reddit():
-    return {"message": "welcome to Reddit"}
+async def reddit(request: Request):
+    redirect_uri = request.url_for("reddit_callback")
+    return await oauth.reddit.authorize_redirect(request, redirect_uri, duration="permanent")
+
+
+
+
+@router.get("/reddit/callback")
+async def reddit_callback(request: Request):
+    return {"message": "hi. reddit callback hit"}  
+    
 
 @router.get("/x")
 async def x():
@@ -52,3 +76,7 @@ async def get_current_user(request: Request):
         return {"message": "no user found"}
 
     return user
+
+@router.get("/youtube-test")
+async def get_youtube_data():
+    pass

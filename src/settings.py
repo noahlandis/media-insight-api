@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     google_client_secret: SecretStr
     openai_api_key: SecretStr
     oauth_secret_key: SecretStr
+    reddit_client_id: SecretStr
+    reddit_client_secret: SecretStr
     frontend_url: str
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
