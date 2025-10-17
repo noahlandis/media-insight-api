@@ -39,7 +39,7 @@ class Platform(str, Enum):
     reddit = "reddit"
 
 @router.get("/me")
-async def get_current_user(request: Request):
+def get_current_user(request: Request):
     user = request.session.get("user")
     if not user:
         return {"message": "no user found"}
