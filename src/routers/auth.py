@@ -55,14 +55,17 @@ async def auth(platform: Platform, request: Request):
 @router.get("/{platform}/callback")
 async def auth_callback(platform: Platform, request: Request):
     frontend_url = config.frontend_url
+    client = oauth.create_client(platform.value)
+
     try:
-        client = oauth.create_client(platform.value)
         token = await client.authorize_access_token(request)
-        if 'user' not in request.session:
-            request.session['user'] = {}
-        request.session['user'][platform.value] = None
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
+
+    if 'user' not in request.session:
+        request.session['user'] = {}
+    request.session['user'][platform.value] = None
+    
     return RedirectResponse(frontend_url)
 
 
