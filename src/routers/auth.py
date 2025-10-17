@@ -69,11 +69,6 @@ async def reddit_callback(request: Request):
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
     return RedirectResponse(frontend_url) 
-    
-
-@router.get("/x")
-async def x():
-    return {"message": "welcome to x"}
 
 @router.get("/me")
 async def get_current_user(request: Request):
@@ -82,7 +77,3 @@ async def get_current_user(request: Request):
         return {"message": "no user found"}
 
     return user
-
-@router.get("/youtube-test")
-async def get_youtube_data():
-    pass
