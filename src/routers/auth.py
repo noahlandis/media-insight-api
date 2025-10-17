@@ -34,9 +34,9 @@ router = APIRouter(
     prefix="/auth"
 )
 
-# class Platform(str, Enum):
-#     google = "google"
-#     reddit = "reddit"
+class Platform(str, Enum):
+    google = "google"
+    reddit = "reddit"
 
 @router.get("/me")
 async def get_current_user(request: Request):
@@ -47,22 +47,20 @@ async def get_current_user(request: Request):
     return user
 
 @router.get("/{platform}")
-async def auth(platform: str, request: Request):
-    print(platform)
-    client = oauth.create_client(platform)
-    redirect_uri = request.url_for("auth_callback", platform=platform)
-
+async def auth(platform: Platform, request: Request):
+    client = oauth.create_client(platform.value)
+    redirect_uri = request.url_for("auth_callback", platform=platform.value)
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: str, request: Request):
+async def auth_callback(platform: Platform, request: Request):
     frontend_url = config.frontend_url
     try:
-        client = oauth.create_client(platform)
+        client = oauth.create_client(platform.value)
         token = await client.authorize_access_token(request)
         if 'user' not in request.session:
             request.session['user'] = {}
-        request.session['user'][platform] = None
+        request.session['user'][platform.value] = None
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
     return RedirectResponse(frontend_url)
