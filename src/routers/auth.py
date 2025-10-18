@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from config import get_config, Config
 from enum import Enum
+from dependencies import get_config, get_redis
 
 oauth = OAuth()
 _config = get_config()
@@ -70,4 +71,7 @@ async def auth_callback(platform: Platform, request: Request, config: Config = D
     
     return RedirectResponse(frontend_url)
 
-
+@router.get("/test/redis")
+async def test_redis(redis = Depends(get_redis)):
+    value = await redis.get("foo")
+    return {"foo": value}

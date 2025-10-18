@@ -10,6 +10,9 @@ class Config(BaseSettings):
     reddit_client_id: SecretStr
     reddit_client_secret: SecretStr
     frontend_url: str
+    redis_db: int
+    redis_host: str
+    redis_port: int
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
 @lru_cache
