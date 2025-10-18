@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
+from functools import lru_cache
 
-class Settings(BaseSettings):
+class Config(BaseSettings):
     google_client_id: SecretStr
     google_client_secret: SecretStr
     openai_api_key: SecretStr
@@ -11,6 +12,6 @@ class Settings(BaseSettings):
     frontend_url: str
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
-
-
-config: Settings = Settings()
+@lru_cache
+def get_config() -> Config:
+    return Config()

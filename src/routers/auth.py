@@ -1,26 +1,26 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
-from settings import config
+from config import get_config, Config
 from enum import Enum
 
 oauth = OAuth()
+_config = get_config()
 
 oauth.register(
     name='google',
-    client_id=config.google_client_id.get_secret_value(),
-    client_secret=config.google_client_secret.get_secret_value(),
+    client_id=_config.google_client_id.get_secret_value(),
+    client_secret=_config.google_client_secret.get_secret_value(),
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={
-        # include OIDC + your YouTube scopes
         "scope": "openid email profile https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
     },
 )
 
 oauth.register(
     name="reddit",
-    client_id=config.reddit_client_id.get_secret_value(),
-    client_secret=config.reddit_client_secret.get_secret_value(),
+    client_id=_config.reddit_client_id.get_secret_value(),
+    client_secret=_config.reddit_client_secret.get_secret_value(),
     access_token_url="https://www.reddit.com/api/v1/access_token",
     authorize_url="https://www.reddit.com/api/v1/authorize",
     api_base_url="https://oauth.reddit.com",
@@ -55,7 +55,7 @@ async def auth(platform: Platform, request: Request):
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request):
+async def auth_callback(platform: Platform, request: Request, config: Config = Depends(get_config)):
     frontend_url = config.frontend_url
     client = oauth.create_client(platform.value)
 
