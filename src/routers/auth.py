@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
-from config import get_config, Config
+from config import Config
 from enum import Enum
 from dependencies import get_config, get_redis
 
