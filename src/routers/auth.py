@@ -49,6 +49,8 @@ def get_current_user(request: Request):
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request):
     client = oauth.create_client(platform.value)
+    if client is None:
+        return RedirectResponse(f"{frontend_url}?error=unknown_provider")
     redirect_uri = request.url_for("auth_callback", platform=platform.value)
     return await client.authorize_redirect(request, redirect_uri)
 
