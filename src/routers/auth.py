@@ -1,35 +1,10 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
-from config import Config
+from config.settings import Settings
+from config.oauth_manager import OAuthManager
 from enum import Enum
-from dependencies import get_config, get_redis
-
-oauth = OAuth()
-_config = get_config()
-
-oauth.register(
-    name='google',
-    client_id=_config.google_client_id.get_secret_value(),
-    client_secret=_config.google_client_secret.get_secret_value(),
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={
-        "scope": "openid email profile https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
-    },
-)
-
-oauth.register(
-    name="reddit",
-    client_id=_config.reddit_client_id.get_secret_value(),
-    client_secret=_config.reddit_client_secret.get_secret_value(),
-    access_token_url="https://www.reddit.com/api/v1/access_token",
-    authorize_url="https://www.reddit.com/api/v1/authorize",
-    api_base_url="https://oauth.reddit.com",
-    client_kwargs={
-        "scope": "identity read",
-        "token_endpoint_auth_method": "client_secret_basic",
-    },
-)
+from dependencies import get_settings, get_redis, get_oauth_manager
 
 router = APIRouter(
     prefix="/auth"
@@ -48,7 +23,7 @@ def get_current_user(request: Request):
     return user
 
 @router.get("/{platform}")
-async def auth(platform: Platform, request: Request):
+async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
     client = oauth.create_client(platform.value)
     if client is None:
         return RedirectResponse(f"{frontend_url}?error=unknown_provider")
@@ -56,8 +31,8 @@ async def auth(platform: Platform, request: Request):
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request, config: Config = Depends(get_config)):
-    frontend_url = config.frontend_url
+async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager)):
+    frontend_url = settings.frontend_url
     client = oauth.create_client(platform.value)
 
     try:
