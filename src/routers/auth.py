@@ -5,7 +5,8 @@ from config.settings import Settings
 from config.oauth_manager import OAuthManager
 from enum import Enum
 from dependencies import get_settings, get_redis, get_oauth_manager
-
+import secrets
+import json 
 router = APIRouter(
     prefix="/auth"
 )
@@ -17,6 +18,7 @@ class Platform(str, Enum):
 @router.get("/me")
 def get_current_user(request: Request):
     user = request.session.get("user")
+    print(request.session)
     if not user:
         return {"message": "no user found"}
 
@@ -31,19 +33,29 @@ async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depen
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager)):
+async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis)):
     frontend_url = settings.frontend_url
     client = oauth.create_client(platform.value)
 
     try:
-        token = await client.authorize_access_token(request)
+        provider_response = await client.authorize_access_token(request)
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
 
     if 'user' not in request.session:
         request.session['user'] = {}
+
+    sid = request.session.get("session_id") or secrets.token_urlsafe(32)
+
     request.session['user'][platform.value] = None
-    
+    request.session['session_id'] = sid
+    print(provider_response)
+    await redis.hset(sid, mapping={
+    platform: json.dumps({
+        "access_token": provider_response.get("access_token"),
+        })
+    })
+ 
     return RedirectResponse(frontend_url)
 
 @router.get("/test/redis")
