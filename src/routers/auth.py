@@ -17,7 +17,7 @@ class Platform(str, Enum):
 
 @router.get("/me")
 def get_current_user(request: Request):
-    user = request.session.get("user")
+    user = request.session.get("connected_platforms")
     print(request.session)
     if not user:
         return {"message": "no user found"}
@@ -42,13 +42,14 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
 
-    if 'user' not in request.session:
-        request.session['user'] = {}
+    if 'connected_platforms' not in request.session:
+        request.session['connected_platforms'] = []
 
     sid = request.session.get("session_id") or secrets.token_urlsafe(32)
 
-    request.session['user'][platform.value] = None
+    
     request.session['session_id'] = sid
+    request.session['connected_platforms'].append(platform.value)
        
     key = f"session:{sid}"
     await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
