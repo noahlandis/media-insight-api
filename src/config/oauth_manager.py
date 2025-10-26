@@ -1,5 +1,5 @@
 from authlib.integrations.starlette_client import OAuth
-from config.settings import Settings
+from src.config.settings import Settings
 from dataclasses import dataclass
 
 @dataclass(frozen=True)

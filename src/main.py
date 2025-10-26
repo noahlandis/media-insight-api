@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth
-from dependencies import get_settings
+from src.routers import auth
+from src.dependencies import get_settings
 import redis.asyncio as redis
 from contextlib import asynccontextmanager
 

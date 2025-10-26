@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
-from config.settings import Settings
-from config.oauth_manager import OAuthManager
+from src.config.settings import Settings
+from src.config.oauth_manager import OAuthManager
 from enum import Enum
-from dependencies import get_settings, get_redis, get_oauth_manager
+from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
 import json 
 router = APIRouter(
@@ -49,13 +49,9 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
 
     request.session['user'][platform.value] = None
     request.session['session_id'] = sid
-    print(provider_response)
-    await redis.hset(sid, mapping={
-    platform: json.dumps({
-        "access_token": provider_response.get("access_token"),
-        })
-    })
- 
+       
+    key = f"user:{sid}"
+    await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     return RedirectResponse(frontend_url)
 
 @router.get("/test/redis")

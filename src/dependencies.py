@@ -1,5 +1,5 @@
-from config.settings import Settings
-from config.oauth_manager import OAuthManager
+from src.config.settings import Settings
+from src.config.oauth_manager import OAuthManager
 from fastapi import Request
 from functools import lru_cache
 
