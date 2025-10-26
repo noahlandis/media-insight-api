@@ -50,7 +50,7 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     request.session['user'][platform.value] = None
     request.session['session_id'] = sid
        
-    key = f"user:{sid}"
+    key = f"session:{sid}"
     await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     return RedirectResponse(frontend_url)
 
