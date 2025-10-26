@@ -20,7 +20,7 @@ def get_current_user(request: Request):
     user = request.session.get("connected_platforms")
     print(request.session)
     if not user:
-        return {"message": "no user found"}
+        return []
 
     return user
 
@@ -49,7 +49,9 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
 
     
     request.session['session_id'] = sid
-    request.session['connected_platforms'].append(platform.value)
+
+    if platform.value not in request.session['connected_platforms']:
+        request.session['connected_platforms'].append(platform.value)
        
     key = f"session:{sid}"
     await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
