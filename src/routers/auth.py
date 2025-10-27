@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from src.config.settings import Settings
@@ -16,13 +16,11 @@ class Platform(str, Enum):
     reddit = "reddit"
 
 @router.get("/me")
-def get_current_user(request: Request):
-    user = request.session.get("connected_platforms")
-    print(request.session)
-    if not user:
-        return []
-
-    return user
+def get_connected_platforms(request: Request):
+    connected_platforms = request.session.get("connected_platforms")
+    if not connected_platforms:
+        raise HTTPException(status_code=401, detail="No platforms connected")
+    return connected_platforms
 
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
