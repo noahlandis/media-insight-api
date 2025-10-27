@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from src.routers import auth
+from src.routers import auth, api
 from src.dependencies import get_settings
 import redis.asyncio as redis
 from contextlib import asynccontextmanager
@@ -36,6 +36,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(api.router)
 
 @app.get("/")
 def root():
