@@ -4,9 +4,11 @@ from authlib.integrations.starlette_client import OAuth, OAuthError
 from src.config.settings import Settings
 from src.config.oauth_manager import OAuthManager
 from enum import Enum
-from src.dependencies import get_settings, get_redis, get_oauth_manager
+from src.dependencies import get_settings, get_redis, get_oauth_manager, get_session_key
 import secrets
 import json
+from src.utils import session_key
+
 
 router = APIRouter(
     prefix="/auth"
@@ -15,18 +17,6 @@ router = APIRouter(
 class Platform(str, Enum):
     google = "google"
     reddit = "reddit"
-
-def session_key(session_id) -> str:
-    return f"session:{session_id}"
-
-async def get_session_key(request: Request, redis = Depends(get_redis)):
-    session_id = request.session.get("session_id")
-    if not session_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
-    key = session_key(session_id)
-    if not await redis.exists(key):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
-    return key
 
 @router.get("/connected_platforms", status_code=status.HTTP_200_OK)
 async def get_connected_platforms(session_key = Depends(get_session_key), redis = Depends(get_redis)):
