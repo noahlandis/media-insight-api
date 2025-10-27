@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from src.config.settings import Settings
@@ -7,7 +7,7 @@ from enum import Enum
 from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
 import json
- 
+
 router = APIRouter(
     prefix="/auth"
 )
@@ -22,12 +22,12 @@ def session_key(session_id) -> str:
 async def get_session_key(request: Request, redis = Depends(get_redis)):
     session_id = request.session.get("session_id")
     if not session_id:
-        raise HTTPException(status_code=401, detail="Unauthenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
     if not await redis.exists(f"session:{session_id}"):
-        raise HTTPException(status_code=401, detail="Unauthenticated")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
     return session_key(session_id)
 
-@router.get("/connected_platforms")
+@router.get("/connected_platforms", status_code=status.HTTP_200_OK)
 async def get_connected_platforms(session_key = Depends(get_session_key), redis = Depends(get_redis)):
     connected_platforms = await redis.json().objkeys(session_key, "$")
     return connected_platforms[0]
@@ -58,8 +58,8 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
         request.session['session_id'] = sid
 
        
-    key = f"session:{sid}"
-    await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
+    
+    await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     return RedirectResponse(frontend_url)
 
 @router.get("/test/redis")
