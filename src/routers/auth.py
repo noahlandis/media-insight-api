@@ -6,7 +6,8 @@ from src.config.oauth_manager import OAuthManager
 from enum import Enum
 from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
-import json 
+import json
+ 
 router = APIRouter(
     prefix="/auth"
 )
@@ -15,21 +16,21 @@ class Platform(str, Enum):
     google = "google"
     reddit = "reddit"
 
-async def get_current_user(request: Request, redis = Depends(get_redis)):
+def session_key(session_id) -> str:
+    return f"session:{session_id}"
+
+async def get_session_key(request: Request, redis = Depends(get_redis)):
     session_id = request.session.get("session_id")
     if not session_id:
         raise HTTPException(status_code=401, detail="Unauthenticated")
     if not await redis.exists(f"session:{session_id}"):
         raise HTTPException(status_code=401, detail="Unauthenticated")
-    return session_id
+    return session_key(session_id)
 
 @router.get("/connected_platforms")
-async def get_connected_platforms(request: Request, redis = Depends(get_redis)):
-    key = f"session:{request.session['session_id']}"
-    connected_platforms = await redis.json().objkeys(key, "$")
-    print(connected_platforms)
-    return connected_platforms
-    return user['connected_platforms'][0]
+async def get_connected_platforms(session_key = Depends(get_session_key), redis = Depends(get_redis)):
+    connected_platforms = await redis.json().objkeys(session_key, "$")
+    return connected_platforms[0]
 
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
