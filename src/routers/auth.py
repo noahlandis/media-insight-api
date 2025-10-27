@@ -15,15 +15,21 @@ class Platform(str, Enum):
     google = "google"
     reddit = "reddit"
 
-def get_current_user(request: Request):
-    user = request.session.get("user")
-    if not user:
+async def get_current_user(request: Request, redis = Depends(get_redis)):
+    session_id = request.session.get("session_id")
+    if not session_id:
         raise HTTPException(status_code=401, detail="Unauthenticated")
-    return user
+    if not await redis.exists(f"session:{session_id}"):
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return session_id
 
 @router.get("/connected_platforms")
-def get_connected_platforms(user = Depends(get_current_user)):
-    return user['connected_platforms']
+async def get_connected_platforms(request: Request, redis = Depends(get_redis)):
+    key = f"session:{request.session['session_id']}"
+    connected_platforms = await redis.json().objkeys(key, "$")
+    print(connected_platforms)
+    return connected_platforms
+    return user['connected_platforms'][0]
 
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
@@ -43,18 +49,13 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
 
-    if 'user' not in request.session:
-        request.session['user'] = {}
-        request.session['user']['connected_platforms'] = []
-        request.session['user']['session_id'] = None
 
-    sid = request.session['user']['session_id'] or secrets.token_urlsafe(32)
+    if 'session_id' in request.session:
+        sid = request.session.get('session_id')
+    else:
+        sid = secrets.token_urlsafe(32)
+        request.session['session_id'] = sid
 
-    
-    request.session['user']['session_id'] = sid
-
-    if platform.value not in request.session['user']['connected_platforms']:
-        request.session['user']['connected_platforms'].append(platform.value)
        
     key = f"session:{sid}"
     await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})

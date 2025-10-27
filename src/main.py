@@ -12,7 +12,7 @@ _config = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis = redis.Redis(host=_config.redis_host, port=_config.redis_port, db=_config.redis_db)
+    app.state.redis = redis.Redis(host=_config.redis_host, port=_config.redis_port, db=_config.redis_db, decode_responses=True)
     try:
         yield
     finally:
