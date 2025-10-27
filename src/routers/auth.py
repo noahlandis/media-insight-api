@@ -61,8 +61,3 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     
     await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     return RedirectResponse(frontend_url)
-
-@router.get("/test/redis")
-async def test_redis(redis = Depends(get_redis)):
-    value = await redis.get("foo")
-    return {"foo": value}
