@@ -23,9 +23,10 @@ async def get_session_key(request: Request, redis = Depends(get_redis)):
     session_id = request.session.get("session_id")
     if not session_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
-    if not await redis.exists(f"session:{session_id}"):
-        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
-    return session_key(session_id)
+    key = session_key(session_id)
+    if not await redis.exists(key):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthenticated")
+    return key
 
 @router.get("/connected_platforms", status_code=status.HTTP_200_OK)
 async def get_connected_platforms(session_key = Depends(get_session_key), redis = Depends(get_redis)):
