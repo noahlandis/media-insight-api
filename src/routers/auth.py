@@ -15,12 +15,15 @@ class Platform(str, Enum):
     google = "google"
     reddit = "reddit"
 
-@router.get("/me")
-def get_connected_platforms(request: Request):
-    connected_platforms = request.session.get("connected_platforms")
-    if not connected_platforms:
-        raise HTTPException(status_code=401, detail="No platforms connected")
-    return connected_platforms
+def get_current_user(request: Request):
+    user = request.session.get("user")
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return user
+
+@router.get("/connected_platforms")
+def get_connected_platforms(user = Depends(get_current_user)):
+    return user['connected_platforms']
 
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
@@ -40,16 +43,18 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     except OAuthError as e:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
 
-    if 'connected_platforms' not in request.session:
-        request.session['connected_platforms'] = []
+    if 'user' not in request.session:
+        request.session['user'] = {}
+        request.session['user']['connected_platforms'] = []
+        request.session['user']['session_id'] = None
 
-    sid = request.session.get("session_id") or secrets.token_urlsafe(32)
+    sid = request.session['user']['session_id'] or secrets.token_urlsafe(32)
 
     
-    request.session['session_id'] = sid
+    request.session['user']['session_id'] = sid
 
-    if platform.value not in request.session['connected_platforms']:
-        request.session['connected_platforms'].append(platform.value)
+    if platform.value not in request.session['user']['connected_platforms']:
+        request.session['user']['connected_platforms'].append(platform.value)
        
     key = f"session:{sid}"
     await redis.json().merge(key, "$", {platform.value: {"access_token": provider_response.get("access_token")}})
