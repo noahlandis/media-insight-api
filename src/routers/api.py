@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from src.dependencies import get_redis, get_session_key
-from pydantic import BaseModel
+from pydantic import BaseModel, StringConstraints
+from typing import Annotated
 
 
 router = APIRouter(
@@ -8,7 +9,7 @@ router = APIRouter(
 )
 
 class PromptRequest(BaseModel):
-    prompt: str
+    prompt: Annotated[str, StringConstraints(max_length=100)]
 
 
 @router.get("/connected_platforms", status_code=status.HTTP_200_OK)
@@ -22,3 +23,4 @@ async def get_connected_platforms(session_key = Depends(get_session_key), redis 
 @router.post("/prompt", status_code=status.HTTP_200_OK)
 async def prompt(promptRequest: PromptRequest):
     print(promptRequest.prompt)
+
