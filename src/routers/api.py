@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, status
-from src.dependencies import get_redis, get_session_key
+from src.dependencies import get_redis, get_session_key, get_settings, get_oauth_manager
 from pydantic import BaseModel, StringConstraints
 from typing import Annotated
-
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from src.config.oauth_manager import OAuthManager
 
 router = APIRouter(
     prefix="/api"
@@ -21,6 +23,19 @@ async def get_connected_platforms(session_key = Depends(get_session_key), redis 
 
 
 @router.post("/prompt", status_code=status.HTTP_200_OK)
-async def prompt(promptRequest: PromptRequest):
+async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings), redis = Depends(get_redis), session_key = Depends(get_session_key), oauth: OAuthManager = Depends(get_oauth_manager)):
+    record = await redis.json().get(session_key, '$.google')
+    session_data = record[0]
+    creds = Credentials(
+        token=session_data['access_token'],
+        refresh_token=session_data['refresh_token'],
+        token_uri = "https://oauth2.googleapis.com/token",
+        client_id=settings.google_client_id,
+        client_secret=settings.google_client_secret,
+        scopes=oauth.google.client_kwargs.get('scope')
+    )
+    youtube_service = build("youtube", "v3", credentials=creds)
+    print(youtube_service.channels().list(part="snippet,statistics", mine=True).execute())
+    # youtube_analytics_service = build("youtubeAnalytics", "v2")
     print(promptRequest.prompt)
 
