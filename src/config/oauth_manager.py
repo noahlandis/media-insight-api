@@ -13,6 +13,8 @@ class OAuthManager:
             client_id=self.settings.google_client_id.get_secret_value(),
             client_secret=self.settings.google_client_secret.get_secret_value(),
             server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            api_base_url="https://www.googleapis.com",  # note https:// and trailing slash
+
             authorize_params={"access_type": "offline", "prompt": "consent"},
             client_kwargs={
                 "scope": "openid email profile https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
