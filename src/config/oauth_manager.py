@@ -2,10 +2,14 @@ from authlib.integrations.starlette_client import OAuth
 from src.config.settings import Settings
 from dataclasses import dataclass
 
+async def update_token(name, token, refresh_token=None, access_token=None):
+    print("update_token called")
+    print(token)
+
 @dataclass(frozen=True)
 class OAuthManager:
     settings: Settings
-    oauth: OAuth = OAuth()
+    oauth: OAuth = OAuth(update_token=update_token)
 
     def __post_init__(self):
         self.oauth.register(
