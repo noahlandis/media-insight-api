@@ -5,7 +5,7 @@ from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-from src.config.agent import roulette_agent
+from src.config.agent import agent
 router = APIRouter(
     prefix="/api"
 )
@@ -45,11 +45,15 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
 
     # Run the agent
     success_number = 18  
-    result = await roulette_agent.run('Put my money on square eighteen', deps=success_number)
+    result = await agent.run('Launch a salad')
     print(result.output)  
     #> True
 
-    result = await roulette_agent.run('I bet five is the winner', deps=success_number)
+    result = await agent.run('Launch a burger')
+    print(result.output)
+
+
+    result = await agent.run('Launch a potato')
     print(result.output)
     #> False
 
