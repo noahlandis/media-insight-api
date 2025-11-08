@@ -2,14 +2,25 @@ from pydantic_ai import Agent, RunContext, Tool, ToolDefinition
 from src.dependencies import get_settings
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from dataclasses import dataclass
+import redis
+from src.config.oauth_manager import OAuthManager
 
 _config = get_settings()
+
+@dataclass
+class AgentDeps:
+    redis: redis.Redis
+    oauth: OAuthManager
+    session_key: str
 
 
 
 async def filter_out_tools_by_name(
-    ctx: RunContext[bool], tool_defs: list[ToolDefinition]
+    ctx: RunContext[AgentDeps], tool_defs: list[ToolDefinition]
 ) -> list[ToolDefinition] | None:
+    print("printing session key from ctx")
+    print(ctx.deps.session_key)
     return [tool_def for tool_def in tool_defs if tool_def.name != 'launch_potato']
 
 agent = Agent(  

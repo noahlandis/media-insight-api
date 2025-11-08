@@ -5,7 +5,8 @@ from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-from src.config.agent import agent
+from src.config.agent import agent, AgentDeps
+
 router = APIRouter(
     prefix="/api"
 )
@@ -22,8 +23,16 @@ async def get_connected_platforms(session_key = Depends(get_session_key), redis 
 
 @router.post("/prompt", status_code=status.HTTP_200_OK)
 async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings), redis = Depends(get_redis), session_key = Depends(get_session_key), oauth: OAuthManager = Depends(get_oauth_manager)):
-    record = await redis.json().get(session_key, '$.google')
-    session_data = record[0]
+    # google_record = await redis.json().get(session_key, '$.google')
+    # google_session = google_record[0]
+    # print("PRINTING GOOGLE SESSION")
+    # print(google_session)
+
+    # reddit_record = await redis.json().get(session_key, '$.reddit')
+    # reddit_session = reddit_record[0]
+    # print("PRINTING REDDIT SESSION")
+    # print(reddit_session)
+
     # creds = Credentials(
     #     token=session_data['access_token'],
     #     refresh_token=session_data['refresh_token'],
@@ -44,17 +53,19 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
 
 
     # Run the agent
-    success_number = 18  
-    result = await agent.run('Launch a salad')
-    print(result.output)  
-    #> True
+    # success_number = 18  
+    # result = await agent.run('Launch a salad')
+    # print(result.output)  
+    # #> True
 
-    result = await agent.run('Launch a burger')
+    result = await agent.run('Launch a burger', deps=AgentDeps(redis, oauth, session_key))
     print(result.output)
 
 
-    result = await agent.run('Launch a potato')
-    print(result.output)
+    # result = await agent.run('Launch a potato')
+    # print(result.output)
     #> False
+
+
 
 
