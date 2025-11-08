@@ -47,7 +47,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print(session_data)
 
 
-    resp = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google_session)
+    # resp = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google_session)
     # print(resp.json())
     # print(promptRequest.prompt)
 
@@ -58,18 +58,18 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print(result.output)  
     # #> True
 
-    # print("get yt likes")
-    # result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
+    print("get yt likes")
+    result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
+    print(result.output)
 
 
-    # print("get yt comments")
-    # result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
+    print("get yt comments")
+    result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
+    print(result.output)
 
-    # print("get reddit karm")
-    # result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
+    print("get reddit karm")
+    result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
+    print(result.output)
 
     
 

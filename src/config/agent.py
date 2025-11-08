@@ -28,7 +28,10 @@ async def filter_out_tools_by_name(
         if "reddit" in tool_def.name and not reddit:
             continue
         allowed_tools.append(tool_def)
-        
+    
+    print("allowed tools")
+    for tool_def in allowed_tools:
+        print(tool_def.name)
     return allowed_tools
 
 agent = Agent(  
