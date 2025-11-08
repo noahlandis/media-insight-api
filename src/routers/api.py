@@ -58,8 +58,20 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print(result.output)  
     # #> True
 
-    result = await agent.run('Launch a burger', deps=AgentDeps(redis, oauth, session_key))
+    print("get yt likes")
+    result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
     print(result.output)
+
+
+    print("get yt comments")
+    result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
+    print(result.output)
+
+    print("get reddit karm")
+    result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
+    print(result.output)
+
+    
 
 
     # result = await agent.run('Launch a potato')

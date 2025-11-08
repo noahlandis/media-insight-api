@@ -14,14 +14,22 @@ class AgentDeps:
     oauth: OAuthManager
     session_key: str
 
-
-
 async def filter_out_tools_by_name(
     ctx: RunContext[AgentDeps], tool_defs: list[ToolDefinition]
 ) -> list[ToolDefinition] | None:
-    print("printing session key from ctx")
-    print(ctx.deps.session_key)
-    return [tool_def for tool_def in tool_defs if tool_def.name != 'launch_potato']
+    session = await ctx.deps.redis.json().get(ctx.deps.session_key)
+    google = session.get("google")
+    reddit = session.get("reddit")
+
+    allowed_tools = []
+    for tool_def in tool_defs:
+        if "youtube" in tool_def.name and not google:
+            continue
+        if "reddit" in tool_def.name and not reddit:
+            continue
+        allowed_tools.append(tool_def)
+        
+    return allowed_tools
 
 agent = Agent(  
     model = OpenAIChatModel(
@@ -30,27 +38,34 @@ agent = Agent(
     ),
     deps_type=str,
     system_prompt=(
-        'Use one of the `launch` functions to launch the desired food'
+        'Use one of the functions to provide the user with social media insights'
     ),
     prepare_tools=filter_out_tools_by_name
 )
 
 @agent.tool
-async def launch_potato(ctx: RunContext[int]) -> str:  
-    """Launches a potato"""
-    return 'Just launched a potato'
+async def youtube_likes(ctx: RunContext[AgentDeps]) -> str:  
+    """Returns youtube likes"""
+    return 'Here are your youtube likes'
 
 
 
 @agent.tool
-async def launch_salad(ctx: RunContext[int]) -> str:  
-    """Launches a salad"""
-    return 'Just launched a salad'
+async def youtube_comments(ctx: RunContext[AgentDeps]) -> str:  
+    """Returns youtube comments"""
+    return 'Here are your youtube comments'
 
 
 
 @agent.tool
-async def launch_burger(ctx: RunContext[int]) -> str:  
-    """Launches a burger"""
-    return 'Just launched a burger'
+async def reddit_karma(ctx: RunContext[AgentDeps]) -> str:  
+    """Returns reddit karma"""
+    return 'Here is your reddit karma'
+
+
+@agent.tool
+async def reddit_posts(ctx: RunContext[AgentDeps]) -> str:  
+    """Returns reddit posts"""
+    return 'Here is your reddit posts'
+
 
