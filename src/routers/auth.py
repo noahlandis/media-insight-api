@@ -48,5 +48,6 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     if platform.value == "reddit":
         await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     else:
-        await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": 1731078840}})
+        await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
+        await redis.set(provider_response.get("refresh_token"), session_key(sid))
     return RedirectResponse(frontend_url)

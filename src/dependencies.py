@@ -8,12 +8,12 @@ from src.utils import session_key
 def get_settings() -> Settings:
     return Settings()
 
-@lru_cache
-def get_oauth_manager() -> OAuthManager:
-    return OAuthManager(get_settings()).oauth
-
 async def get_redis(request: Request):
     return request.app.state.redis
+
+def get_oauth_manager(request: Request, redis = Depends(get_redis)):
+    oauth_manager = OAuthManager(get_settings(), redis=redis)
+    return oauth_manager.oauth
 
 async def get_session_key(request: Request, redis = Depends(get_redis)):
     session_id = request.session.get("session_id")
