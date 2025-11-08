@@ -10,20 +10,14 @@ class OAuthManager:
 
         async def update_token(name, token, refresh_token=None, access_token=None):
             if self.redis:
-                print("old token")
-                print(access_token)
-                print("new token")
-                print(token['access_token'])
-
-                print()
-
-                print("old token refresh")
-                print(refresh_token)
-                print("new token refresh")
-                print(token['refresh_token'])
-
                 session_key = await self.redis.get(refresh_token)
-                await self.redis.json().merge(session_key, "$.google", {"access_token": token.get("access_token"), "refresh_token": token.get("refresh_token"), "expires_at": token.get("expires_at")})
+                new_refresh_token = token.get("refresh_token")
+
+                # we rename the old refresh token since we'll need to use it as a key to retrieve the session_key later
+                if refresh_token != new_refresh_token:
+                    await self.redis.rename(refresh_token, new_refresh_token)
+
+                await self.redis.json().merge(session_key, "$.google", {"access_token": token.get("access_token"), "refresh_token": new_refresh_token, "expires_at": token.get("expires_at")})
 
         self.oauth = OAuth(update_token=update_token)
 

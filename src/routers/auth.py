@@ -49,5 +49,6 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
         await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token")}})
     else:
         await redis.json().merge(session_key(sid), "$", {platform.value: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
+        # we need to create an inverse mapping since the starlette update_token function isn't session scoped. Without this, we wouldn't know which redis record to update when the token is refreshed
         await redis.set(provider_response.get("refresh_token"), session_key(sid))
     return RedirectResponse(frontend_url)
