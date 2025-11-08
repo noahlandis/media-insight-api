@@ -5,7 +5,7 @@ from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-
+from src.config.agent import roulette_agent
 router = APIRouter(
     prefix="/api"
 )
@@ -18,8 +18,6 @@ class PromptRequest(BaseModel):
 async def get_connected_platforms(session_key = Depends(get_session_key), redis = Depends(get_redis)):
     connected_platforms = await redis.json().objkeys(session_key, "$") # this is safe since get_session_key already checks that the key exists 
     return connected_platforms[0]
-
-
 
 
 @router.post("/prompt", status_code=status.HTTP_200_OK)
@@ -37,8 +35,22 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # youtube_service = build("youtube", "v3", credentials=creds)
     # print(youtube_service.channels().list(part="snippet,statistics", mine=True).execute())
     # # youtube_analytics_service = build("youtubeAnalytics", "v2")
-    resp = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=session_data)
-    print(resp.json())
-    print(promptRequest.prompt)
+    # print(session_data)
+
+
+    # resp = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=session_data)
+    # print(resp.json())
+    # print(promptRequest.prompt)
+
+
+    # Run the agent
+    success_number = 18  
+    result = await roulette_agent.run('Put my money on square eighteen', deps=success_number)
+    print(result.output)  
+    #> True
+
+    result = await roulette_agent.run('I bet five is the winner', deps=success_number)
+    print(result.output)
+    #> False
 
 
