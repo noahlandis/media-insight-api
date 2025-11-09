@@ -5,8 +5,15 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from dataclasses import dataclass
 import redis
 from src.config.oauth_manager import OAuthManager
-
+from pydantic import BaseModel, ConfigDict
+import datetime
 _config = get_settings()
+
+class Channel(BaseModel):
+    view_count: int
+    subscriber_count: int
+    video_count: int
+    published_at: datetime.date
 
 @dataclass
 class AgentDeps:
@@ -40,7 +47,7 @@ agent = Agent(
         provider=OpenAIProvider(api_key=_config.openai_api_key.get_secret_value()),
     ),
     deps_type=str,
-    system_prompt=(
+    instructions=(
         'Use one of the functions to provide the user with social media insights'
     ),
     prepare_tools=filter_out_tools_by_name
@@ -50,6 +57,15 @@ agent = Agent(
 async def youtube_likes(ctx: RunContext[AgentDeps]) -> str:  
     """Returns youtube likes"""
     return 'Here are your youtube likes'
+
+
+@agent.tool
+async def youtube_video_count(ctx: RunContext[AgentDeps]):  
+    """Returns number of youtube videos"""
+    session = await ctx.deps.redis.json().get(ctx.deps.session_key)
+    google = session.get("google")
+    result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google)
+    return result.json()
 
 
 

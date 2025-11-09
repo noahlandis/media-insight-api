@@ -5,7 +5,7 @@ from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-from src.config.agent import agent, AgentDeps
+from src.config.agent import agent, AgentDeps, Channel
 
 router = APIRouter(
     prefix="/api"
@@ -47,8 +47,12 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print(session_data)
 
 
-    # resp = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google_session)
-    # print(resp.json())
+    # response = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google_session)
+    # # statistics = resp.json()
+    # # print(resp.json())
+    # channel = Channel.model_validate(response.json())
+    # print(channel)
+
     # print(promptRequest.prompt)
 
 
@@ -58,18 +62,21 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print(result.output)  
     # #> True
 
-    print("get yt likes")
-    result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
+    # print("get yt likes")
+    # result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
+    # print(result.output)
+
+    print("get yt video count")
+    result = await agent.run('Show me how many videos i have on my channel', deps=AgentDeps(redis, oauth, session_key))
     print(result.output)
 
+    # print("get yt comments")
+    # result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
+    # print(result.output)
 
-    print("get yt comments")
-    result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
-    print(result.output)
-
-    print("get reddit karm")
-    result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
-    print(result.output)
+    # print("get reddit karm")
+    # result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
+    # print(result.output)
 
     
 
