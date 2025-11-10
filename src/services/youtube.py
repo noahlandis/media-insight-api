@@ -157,3 +157,23 @@ async def get_public_videos(google_client, google_session):
     }
 
     return public_videos
+
+
+async def get_channel_overview_analytics(google_client, google_session):
+    """
+    gets views (both public, private, unlisted), comments, likes, dislikes, estimatedMinutesWatched, averageViewDuration, subscribersGained, subscribersLost
+    """
+    resp = await google_client.get(
+        'https://youtubeanalytics.googleapis.com/v2/reports',
+        params={
+            'ids': 'channel==MINE',
+            'startDate': '2005-10-01',
+            'endDate': '2025-11-11',
+            "metrics": "views,comments,likes,dislikes,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost",
+        },
+        token=google_session
+    )
+    data = resp.json()
+    print(data)
+
+       

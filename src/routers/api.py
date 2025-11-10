@@ -6,7 +6,9 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
 from src.config.agent import agent, AgentDeps, Channel
-from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_count, get_video_details, get_public_videos
+from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_count, get_video_details, get_public_videos, get_channel_overview_analytics
+import json
+
 router = APIRouter(
     prefix="/api"
 )
@@ -27,54 +29,24 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_session = google_record[0]
 
     print("TESTING FUNCTIONS")
-    # await get_channel_overview(oauth.google, google_session)
-    # print()
+    print("channel overview data api")
+    await get_channel_overview(oauth.google, google_session)
+    print()
+    print("channel stats data api")
     await get_channel_stats(oauth.google, google_session)
     print()
+
     # await get_videos(oauth.google, google_session)
     # print()
     # await get_video_count(oauth.google, google_session)
     # print()
     # videos = await get_video_details(oauth.google, google_session)
-    # print("videos")
-    # print(videos)
-    # print("video length")
-    # print(len(videos))
-
-    # pb = await get_public_videos(oauth.google, google_session)
-    # print("public videos")
-    # print(pb)
-    # print("public video length")
-    # print(len(pb))
-
-    print("testing youtube analyitics api")
-    resp = await oauth.google.get(
-        'https://youtubeanalytics.googleapis.com/v2/reports',
-        params={
-            'ids': 'channel==MINE',
-            'startDate': '2005-10-01',
-            'endDate': '2025-11-10',
-            "metrics": "views,comments,likes,dislikes,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost",
-
-        },
-        token=google_session
-    )
-    data = resp.json()
-    print(data)
-    # data = await resp.json()
-    # print(data)
+    print()
+    print("channel overview analytics api")
+    await get_channel_overview_analytics(oauth.google, google_session)
+    print()
 
 
-
-
-
-
-
- 
-
-
-    # channel = Channel.model_validate(response.json())
-    # print(channel)
 
     # print(promptRequest.prompt)
 
