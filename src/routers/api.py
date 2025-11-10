@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
 from src.config.agent import agent, AgentDeps, Channel
-from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_count, get_video_details, get_public_videos, get_channel_overview_analytics
+from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_details, get_public_videos, get_channel_overview_analytics, get_top_viewed_video_ids_analytics, get_videos_search_api, get_video_count_playlist_api, get_video_count_search_api
 import json
 
 router = APIRouter(
@@ -28,23 +28,45 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_record = await redis.json().get(session_key, '$.google')
     google_session = google_record[0]
 
-    print("TESTING FUNCTIONS")
-    print("channel overview data api")
-    await get_channel_overview(oauth.google, google_session)
-    print()
-    print("channel stats data api")
-    await get_channel_stats(oauth.google, google_session)
-    print()
+    # print("TESTING FUNCTIONS")
+    # print("channel overview data api")
+    # await get_channel_overview(oauth.google, google_session)
+    # print()
+    # print("channel stats data api")
+    # await get_channel_stats(oauth.google, google_session)
+    # print()
 
     # await get_videos(oauth.google, google_session)
     # print()
-    # await get_video_count(oauth.google, google_session)
-    # print()
+
+    print("get video count playlist api")
+    await get_video_count_playlist_api(oauth.google, google_session)
+    print()
     # videos = await get_video_details(oauth.google, google_session)
+    # print()
+    # print("channel overview analytics api")
+    # await get_channel_overview_analytics(oauth.google, google_session)
+    # print()
+
+    # print("top viewed video ids analytics api")
+    # await get_top_viewed_video_ids_analytics(oauth.google, google_session)
+
+    # print("PLAYLIST ITEMS API")
+    # playlist_items_videos = await get_videos(oauth.google, google_session)
+    # print()
+    # print()
+    # print()
+    # print()
+    # print("SEARCH YOUTUBE API")
+    # search_items_videos = await get_videos_search_api(oauth.google, google_session)
+
     print()
-    print("channel overview analytics api")
-    await get_channel_overview_analytics(oauth.google, google_session)
+    print("get video count search api")
+    await get_video_count_search_api(oauth.google, google_session)
     print()
+
+    
+
 
 
 

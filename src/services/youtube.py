@@ -53,15 +53,21 @@ async def get_videos(google_client, google_session):
 
 
 
-    # print(videos)
+    print("Number of videos")
+    print(len(videos))
+    print()
+    print("Results")
+    for key, value in videos.items():
+        print(f"{key}: {value}")
+        print()
     return videos
 
-async def get_video_count(google_client, google_session):
+async def get_video_count_playlist_api(google_client, google_session):
     """
     Returns the number of videos 'totalResults' (for both longform and shorts), regardless of visibility settings (uses part: id to ensure the smallest response, in case the user is only interested in the total number of videos)
     """
     upload_playlist_id = await _get_upload_playlist_id(google_client, google_session)
-    resp = await google_client.get('youtube/v3/playlistItems', params={'mine': True, 'part': 'id', 'playlistId': upload_playlist_id}, token=google_session)
+    resp = await google_client.get('youtube/v3/playlistItems', params={'mine': True, 'part': 'id', 'playlistId': upload_playlist_id, 'maxResults': 0}, token=google_session)
     data = resp.json()
     print(data['pageInfo']['totalResults'])
 
@@ -175,5 +181,98 @@ async def get_channel_overview_analytics(google_client, google_session):
     )
     data = resp.json()
     print(data)
+
+
+async def get_top_viewed_video_ids_analytics(google_client, google_session):
+    """
+    gets videos ids (both public, private, unlisted), and each of their views comments, likes, dislikes, estimatedMinutesWatched, averageViewDuration, subscribersGained, subscribersLost. Sorts by views
+    """
+    resp = await google_client.get(
+        'https://youtubeanalytics.googleapis.com/v2/reports',
+        params={
+            'ids': 'channel==MINE',
+            'startDate': '2005-10-01',
+            'endDate': '2025-11-10',   # same as your other call
+            'metrics': (
+                'views,comments,likes,dislikes,'
+                'estimatedMinutesWatched,averageViewDuration,'
+                'subscribersGained,subscribersLost'
+            ),
+            'dimensions': 'video',
+            'sort': '-views',          # REQUIRED for this report type
+            'maxResults': 200,    
+        },
+        token=google_session
+    )
+    data = resp.json()
+    print(data)
+
+async def get_videos_search_api(google_client, google_session):
+    """
+    gets video ids, title, description, published at (doesn't require upload playlist id)
+    """
+    videos = {}
+    next_page_token = None
+    while True:
+        resp = await google_client.get(
+            'youtube/v3/search',
+            params={
+                'part': 'snippet',
+                'forMine': True,
+                'type': 'video',
+                'maxResults': 50,
+                'pageToken': next_page_token
+            },
+            token=google_session
+        )
+        data = resp.json()
+        for item in data['items']:
+            snippet = item['snippet']
+            video_id = item['id']['videoId']
+
+            videos[video_id] = {
+                'title': snippet['title'],
+                'description': snippet.get('description', ''),
+                'publishedAt': snippet['publishedAt']
+            }
+
+        next_page_token = data.get('nextPageToken')
+        if not next_page_token:
+            break
+
+
+
+    print("Number of videos")
+    print(len(videos))
+    print()
+    print("Results")
+    for key, value in videos.items():
+        print(f"{key}: {value}")
+        print()
+    return videos
+
+async def get_video_count_search_api(google_client, google_session):
+    """
+    Returns the number of videos 'totalResults' (for both longform and shorts), regardless of visibility settings (doesn't require upload playlist id)
+    """
+    resp = await google_client.get(
+        'youtube/v3/search',
+        params={
+            'part': 'snippet',
+            'forMine': True,
+            'type': 'video',
+            'maxResults': 0
+        },
+        token=google_session
+    )
+    data = resp.json()
+    print(data['pageInfo']['totalResults'])
+        
+        
+
+
+       
+
+
 
        
