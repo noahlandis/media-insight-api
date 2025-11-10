@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
 from src.config.agent import agent, AgentDeps, Channel
-
+from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_count, get_video_details, get_public_videos
 router = APIRouter(
     prefix="/api"
 )
@@ -25,31 +25,54 @@ async def get_connected_platforms(session_key = Depends(get_session_key), redis 
 async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings), redis = Depends(get_redis), session_key = Depends(get_session_key), oauth: OAuthManager = Depends(get_oauth_manager)):
     google_record = await redis.json().get(session_key, '$.google')
     google_session = google_record[0]
-    # print("PRINTING GOOGLE SESSION")
-    # print(google_session)
 
-    # reddit_record = await redis.json().get(session_key, '$.reddit')
-    # reddit_session = reddit_record[0]
-    # print("PRINTING REDDIT SESSION")
-    # print(reddit_session)
+    print("TESTING FUNCTIONS")
+    # await get_channel_overview(oauth.google, google_session)
+    # print()
+    await get_channel_stats(oauth.google, google_session)
+    print()
+    # await get_videos(oauth.google, google_session)
+    # print()
+    # await get_video_count(oauth.google, google_session)
+    # print()
+    # videos = await get_video_details(oauth.google, google_session)
+    # print("videos")
+    # print(videos)
+    # print("video length")
+    # print(len(videos))
 
-    # creds = Credentials(
-    #     token=session_data['access_token'],
-    #     refresh_token=session_data['refresh_token'],
-    #     token_uri = "https://oauth2.googleapis.com/token",
-    #     client_id=settings.google_client_id,
-    #     client_secret=settings.google_client_secret,
-    #     scopes=oauth.google.client_kwargs.get('scope')
-    # )
-    # youtube_service = build("youtube", "v3", credentials=creds)
-    # print(youtube_service.channels().list(part="snippet,statistics", mine=True).execute())
-    # # youtube_analytics_service = build("youtubeAnalytics", "v2")
-    # print(session_data)
+    # pb = await get_public_videos(oauth.google, google_session)
+    # print("public videos")
+    # print(pb)
+    # print("public video length")
+    # print(len(pb))
+
+    print("testing youtube analyitics api")
+    resp = await oauth.google.get(
+        'https://youtubeanalytics.googleapis.com/v2/reports',
+        params={
+            'ids': 'channel==MINE',
+            'startDate': '2005-10-01',
+            'endDate': '2025-11-10',
+            "metrics": "views,comments,likes,dislikes,estimatedMinutesWatched,averageViewDuration,subscribersGained,subscribersLost",
+
+        },
+        token=google_session
+    )
+    data = resp.json()
+    print(data)
+    # data = await resp.json()
+    # print(data)
 
 
-    # response = await oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google_session)
-    # # statistics = resp.json()
-    # # print(resp.json())
+
+
+
+
+
+ 
+
+
     # channel = Channel.model_validate(response.json())
     # print(channel)
 
@@ -66,9 +89,9 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
     # print(result.output)
 
-    print("get yt video count")
-    result = await agent.run('Show me how many videos i have on my channel', deps=AgentDeps(redis, oauth, session_key))
-    print(result.output)
+    # print("get yt video count")
+    # # result = await agent.run('Show me how many videos i have on my channel', deps=AgentDeps(redis, oauth, session_key))
+    # print(result.output)
 
     # print("get yt comments")
     # result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))

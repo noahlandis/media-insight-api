@@ -143,3 +143,17 @@ async def get_video_privacy_status(google_client, google_session):
     resp = await google_client.get('youtube/v3/videos', params={'part': 'status', 'id': video_ids[0]}, token=google_session)
     data = resp.json()
 
+async def get_public_videos(google_client, google_session):
+    """
+    Retrieve video details and return only public videos.
+    """
+    videos = await get_video_details(google_client, google_session)
+
+    # Filter the dictionary for videos whose privacyStatus is 'public'
+    public_videos = {
+        vid: details
+        for vid, details in videos.items()
+        if details.get("privacyStatus") == "public"
+    }
+
+    return public_videos
