@@ -47,7 +47,9 @@ agent = Agent(
     ),
     deps_type=str,
     instructions=(
-        'Use one of the functions to provide the user with social media insights'
+        "Use the functions to provide insights about the user's social media accounts."
+        "Do not ask for parameters that have default values."
+        "Never ask for channel IDs or channel names - the tools automatically use the authenticated account."
     ),
 )
 
@@ -55,14 +57,16 @@ agent = Agent(
 
 @agent.tool(require_parameter_descriptions=True)
 async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest):  
-    """Return YouTube channel stats.
+    """Returns the requested data for the user's youtube channel.
 
     Args:
         request: Filters and options for the channel stats, including visibility scopes.
     """
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
     google = session.get("google")
-    result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google)
+    print("printing part")
+    print(request.part)
+    result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': request.part}, token=google)
     return result.json()
 
 

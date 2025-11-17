@@ -14,7 +14,7 @@ CHANNEL_PART = {
 }
 
 class MediaRequest(BaseModel):
-    visibility_scopes: Optional[Set[Literal["public", "private", "unlisted"]]] = Field(default_factory=lambda: {"public"}, description="the visibility level to filter the requested resource by", min_length=1)
+    visibility_scopes: Optional[Set[Literal["public", "private", "unlisted"]]] = Field(default_factory=lambda: {"public"}, description="the visibility level to filter the requested resource by")
 
 class ChannelRequest(MediaRequest):
     data: Set[Literal["name", "description", "published_at", "video_count", "view_count", "subscriber_count"]] = Field(description="the data the user wishes to see")
