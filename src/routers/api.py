@@ -5,10 +5,11 @@ from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-from src.config.agent import agent, AgentDeps
+from src.config.agent import agent, AgentDeps, print_schema
 from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_details, get_public_videos, get_channel_overview_analytics, get_top_viewed_video_ids_analytics, get_public_videos_search_api, get_video_count_playlist_api, get_video_count_search_api, get_all_videos_search_api, get_public_videos_sort_test
 import json
 from authlib.integrations.base_client.errors import OAuthError
+from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from src.models import ChannelRequest
 
@@ -32,6 +33,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_session = google_record[0]
 
     try:
+        # await agent.run('hello', model=FunctionModel(print_schema))
         # await get_channel_overview(oauth.google, google_session)
         result = await agent.run('Show me my Youtube Channel Stats', deps=AgentDeps(redis, oauth, session_key))
         print(result.output)
