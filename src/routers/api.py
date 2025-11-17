@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from src.dependencies import get_redis, get_session_key, get_settings, get_oauth_manager
 from pydantic import BaseModel, StringConstraints
 from typing import Annotated
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
-from src.config.agent import agent, AgentDeps, Channel
-from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_details, get_public_videos, get_channel_overview_analytics, get_top_viewed_video_ids_analytics, get_videos_search_api, get_video_count_playlist_api, get_video_count_search_api
+from src.config.agent import agent, AgentDeps
+from src.services.youtube import get_channel_overview, get_channel_stats, get_videos, get_video_details, get_public_videos, get_channel_overview_analytics, get_top_viewed_video_ids_analytics, get_public_videos_search_api, get_video_count_playlist_api, get_video_count_search_api, get_all_videos_search_api, get_public_videos_sort_test
 import json
+from authlib.integrations.base_client.errors import OAuthError
+
+from src.models import ChannelRequest
 
 router = APIRouter(
     prefix="/api"
@@ -28,10 +31,20 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_record = await redis.json().get(session_key, '$.google')
     google_session = google_record[0]
 
-    # print("TESTING FUNCTIONS")
-    # print("channel overview data api")
-    # await get_channel_overview(oauth.google, google_session)
-    # print()
+    try:
+        # await get_channel_overview(oauth.google, google_session)
+        result = await agent.run('Show me my Youtube Channel Stats', deps=AgentDeps(redis, oauth, session_key))
+        print(result.output)
+    except OAuthError as e:
+        if e.error == "invalid_grant":
+            # destroy stale session
+            await redis.delete(google_session.get('refresh_token'))
+            await redis.json().delete(session_key, ".google")
+            raise HTTPException(
+                status_code=401,
+                detail="Your Google connection has expired or been revoked. Please reconnect your account.",
+            )
+    print()
     # print("channel stats data api")
     # await get_channel_stats(oauth.google, google_session)
     # print()
@@ -39,9 +52,10 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # await get_videos(oauth.google, google_session)
     # print()
 
-    print("get video count playlist api")
-    await get_video_count_playlist_api(oauth.google, google_session)
-    print()
+    # print("get video count playlist api")
+    # await get_video_count_playlist_api(oauth.google, google_session)
+    # print()
+    # print("get video details")
     # videos = await get_video_details(oauth.google, google_session)
     # print()
     # print("channel overview analytics api")
@@ -57,15 +71,17 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # print()
     # print()
     # print()
-    # print("SEARCH YOUTUBE API")
-    # search_items_videos = await get_videos_search_api(oauth.google, google_session)
+    # print("Showing all public videos")
+    # search_items_videos = await get_public_videos_sort_test(oauth.google, google_session)
 
-    print()
-    print("get video count search api")
-    await get_video_count_search_api(oauth.google, google_session)
-    print()
+    # print()
 
-    
+
+    # print()
+    # print("GET VIDEOS SORT")
+    # search_items_videos = await get_videos_sort(oauth.google, google_session, 'viewCount')
+    # print()
+
 
 
 
@@ -80,7 +96,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     # #> True
 
     # print("get yt likes")
-    # result = await agent.run('Show me my Youtube likes', deps=AgentDeps(redis, oauth, session_key))
+    # result = await agent.run('Show me my Youtube Channel Stats', deps=AgentDeps(redis, oauth, session_key))
     # print(result.output)
 
     # print("get yt video count")

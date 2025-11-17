@@ -7,13 +7,11 @@ import redis
 from src.config.oauth_manager import OAuthManager
 from pydantic import BaseModel, ConfigDict
 import datetime
+from src.models import ChannelRequest, MediaRequest
+
 _config = get_settings()
 
-class Channel(BaseModel):
-    view_count: int
-    subscriber_count: int
-    video_count: int
-    published_at: datetime.date
+
 
 @dataclass
 class AgentDeps:
@@ -21,25 +19,25 @@ class AgentDeps:
     oauth: OAuthManager
     session_key: str
 
-async def filter_out_tools_by_name(
-    ctx: RunContext[AgentDeps], tool_defs: list[ToolDefinition]
-) -> list[ToolDefinition] | None:
-    session = await ctx.deps.redis.json().get(ctx.deps.session_key)
-    google = session.get("google")
-    reddit = session.get("reddit")
+# async def filter_out_tools_by_name(
+#     ctx: RunContext[AgentDeps], tool_defs: list[ToolDefinition]
+# ) -> list[ToolDefinition] | None:
+#     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
+#     google = session.get("google")
+#     reddit = session.get("reddit")
 
-    allowed_tools = []
-    for tool_def in tool_defs:
-        if "youtube" in tool_def.name and not google:
-            continue
-        if "reddit" in tool_def.name and not reddit:
-            continue
-        allowed_tools.append(tool_def)
+#     allowed_tools = []
+#     for tool_def in tool_defs:
+#         if "youtube" in tool_def.name and not google:
+#             continue
+#         if "reddit" in tool_def.name and not reddit:
+#             continue
+#         allowed_tools.append(tool_def)
     
-    print("allowed tools")
-    for tool_def in allowed_tools:
-        print(tool_def.name)
-    return allowed_tools
+#     print("allowed tools")
+#     for tool_def in allowed_tools:
+#         print(tool_def.name)
+#     return allowed_tools
 
 agent = Agent(  
     model = OpenAIChatModel(
@@ -50,18 +48,11 @@ agent = Agent(
     instructions=(
         'Use one of the functions to provide the user with social media insights'
     ),
-    prepare_tools=filter_out_tools_by_name
 )
 
 @agent.tool
-async def youtube_likes(ctx: RunContext[AgentDeps]) -> str:  
-    """Returns youtube likes"""
-    return 'Here are your youtube likes'
-
-
-@agent.tool
-async def youtube_video_count(ctx: RunContext[AgentDeps]):  
-    """Returns number of youtube videos"""
+async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest):  
+    """Returns youtube channel stats"""
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
     google = session.get("google")
     result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google)
@@ -69,22 +60,33 @@ async def youtube_video_count(ctx: RunContext[AgentDeps]):
 
 
 
-@agent.tool
-async def youtube_comments(ctx: RunContext[AgentDeps]) -> str:  
-    """Returns youtube comments"""
-    return 'Here are your youtube comments'
+
+# @agent.tool
+# async def youtube_video_count(ctx: RunContext[AgentDeps]):  
+#     """Returns number of youtube videos"""
+#     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
+#     google = session.get("google")
+#     result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google)
+#     return result.json()
 
 
 
-@agent.tool
-async def reddit_karma(ctx: RunContext[AgentDeps]) -> str:  
-    """Returns reddit karma"""
-    return 'Here is your reddit karma'
+# @agent.tool
+# async def youtube_comments(ctx: RunContext[AgentDeps]) -> str:  
+#     """Returns youtube comments"""
+#     return 'Here are your youtube comments'
 
 
-@agent.tool
-async def reddit_posts(ctx: RunContext[AgentDeps]) -> str:  
-    """Returns reddit posts"""
-    return 'Here is your reddit posts'
+
+# @agent.tool
+# async def reddit_karma(ctx: RunContext[AgentDeps]) -> str:  
+#     """Returns reddit karma"""
+#     return 'Here is your reddit karma'
+
+
+# @agent.tool
+# async def reddit_posts(ctx: RunContext[AgentDeps]) -> str:  
+#     """Returns reddit posts"""
+#     return 'Here is your reddit posts'
 
 
