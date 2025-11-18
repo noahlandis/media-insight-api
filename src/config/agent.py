@@ -7,7 +7,7 @@ import redis
 from src.config.oauth_manager import OAuthManager
 from pydantic import BaseModel, ConfigDict
 import datetime
-from src.models import ChannelRequest, MediaRequest
+from src.models import ChannelRequest, MediaRequest, ChannelResponse
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 _config = get_settings()
@@ -51,12 +51,13 @@ agent = Agent(
         "Do not ask for parameters that have default values."
         "Never ask for channel IDs or channel names - the tools automatically use the authenticated account."
     ),
+    retries=0,
 )
 
 # agent = Agent()
 
 @agent.tool(require_parameter_descriptions=True)
-async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest):  
+async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest) -> ChannelResponse:  
     """Returns the requested data for the user's youtube channel.
 
     Args:
@@ -64,10 +65,10 @@ async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest)
     """
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
     google = session.get("google")
-    print("printing part")
-    print(request.part)
     result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': request.part}, token=google)
-    return result.json()
+    payload = result.json()
+    return ChannelResponse.model_validate(payload)
+
 
 
 def print_schema(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:

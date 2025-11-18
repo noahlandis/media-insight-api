@@ -11,7 +11,7 @@ import json
 from authlib.integrations.base_client.errors import OAuthError
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from src.models import ChannelRequest
+from src.models import ChannelRequest, ChannelResponse
 
 router = APIRouter(
     prefix="/api"
@@ -34,8 +34,15 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
 
     try:
         # await agent.run('hello', model=FunctionModel(print_schema))
-        # await get_channel_overview(oauth.google, google_session)
-        result = await agent.run('Show me my Youtube Channel Stats', deps=AgentDeps(redis, oauth, session_key))
+        # result = await get_channel_overview(oauth.google, google_session)
+        # print(result)
+        # stats = result['items'][0]['statistics']
+        # channel = ChannelResponse.model_validate(result)
+        # print(channel)
+        # print(overview['items'][0]['snippet'])
+        result = await agent.run('How many views does my channel have', deps=AgentDeps(redis, oauth, session_key))
+        # for msg in result.all_messages():
+        #     print("MSG:", msg)
         print(result.output)
     except OAuthError as e:
         if e.error == "invalid_grant":

@@ -6,7 +6,7 @@ async def get_channel_overview(google_client, google_session):
     """
     resp = await google_client.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet'}, token=google_session)
     data = resp.json()
-    print(data)
+    return data
 
 async def get_channel_stats(google_client, google_session):
     """
@@ -14,7 +14,7 @@ async def get_channel_stats(google_client, google_session):
     """
     resp = await google_client.get('youtube/v3/channels', params={'mine': True, 'part': 'statistics'}, token=google_session)
     data = resp.json()
-    print(data)
+    return data
 
 async def _get_upload_playlist_id(google_client, google_session):
     """
