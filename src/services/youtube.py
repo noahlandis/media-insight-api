@@ -188,7 +188,7 @@ async def get_channel_overview_analytics(google_client, google_session):
         token=google_session
     )
     data = resp.json()
-    print(data)
+    return data
 
 
 async def get_top_viewed_video_ids_analytics(google_client, google_session):

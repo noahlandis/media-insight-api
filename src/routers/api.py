@@ -36,14 +36,20 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
         # await agent.run('hello', model=FunctionModel(print_schema))
         # result = await get_channel_overview(oauth.google, google_session)
         # print(result)
+
+        result = await get_channel_overview_analytics(oauth.google, google_session)
+        print(result)
+
         # stats = result['items'][0]['statistics']
         # channel = ChannelResponse.model_validate(result)
         # print(channel)
         # print(overview['items'][0]['snippet'])
-        result = await agent.run('How many views does my channel have', deps=AgentDeps(redis, oauth, session_key))
-        # for msg in result.all_messages():
-        #     print("MSG:", msg)
-        print(result.output)
+        # result = await agent.run('How many views does my channel have and when was my channel created', deps=AgentDeps(redis, oauth, session_key))
+        # # for msg in result.all_messages():
+        # #     print("MSG:", msg)
+        # print(result.output)
+
+
     except OAuthError as e:
         if e.error == "invalid_grant":
             # destroy stale session
