@@ -32,6 +32,13 @@ class ChannelRequest(MediaRequest):
 
 
 def channel_alias_path(part: ChannelPartType, field_name: str) -> AliasPath:
+    """
+    Returns an alias path for a given field
+
+    Args:
+        part (ChannelPartType): "snippet" or "statistics"
+        field_name (str): "the field to extract from the json response"
+    """
     return AliasPath("items", 0, part, to_camel(field_name))
 
 class ChannelResponse(BaseModel):
