@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from src.config.settings import Settings
 from src.config.oauth_manager import OAuthManager
-from enum import Enum
+from enum import StrEnum, auto
 from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
 import json
@@ -14,9 +14,9 @@ router = APIRouter(
     prefix="/auth"
 )
 
-class Platform(str, Enum):
-    google = "google"
-    reddit = "reddit"
+class Platform(StrEnum):
+    GOOGLE = auto()
+    REDDIT = auto()
 
 @router.get("/{platform}")
 async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
