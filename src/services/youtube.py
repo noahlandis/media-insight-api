@@ -187,13 +187,38 @@ async def get_channel_overview_analytics(google_client, google_session):
         },
         token=google_session
     )
+
     data = resp.json()
+
+    # method 1
+    if not data.get("rows"):
+        return {}
+
+    headers = [h["name"] for h in data["columnHeaders"]]
+    row = data["rows"][0]
+    table = dict(zip(headers, row))
+    return table
+
+    # # method 2
+    # view_index = next(
+    #     i for i, col in enumerate(data["columnHeaders"])
+    #     if col["name"] == "views"
+    # )
+    # views = data["rows"][0][view_index]
+    
+
+
+
+    # return table
+
+    t = [col for col in enumerate(data["columnHeaders"])]
+    print(t)
     return data
 
 
 async def get_top_viewed_video_ids_analytics(google_client, google_session):
     """
-    gets videos ids (both public, private, unlisted), and each of their views comments, likes, dislikes, estimatedMinutesWatched, averageViewDuration, subscribersGained, subscribersLost. Sorts by views
+    gets videos ids (both public, private, unlisted), and each of their views comments, likes, dislikes, estimatedMinutesWatched, averageViewDuration, subscribersGained, subscribersLost, shares. Sorts by views
     """
     resp = await google_client.get(
         'https://youtubeanalytics.googleapis.com/v2/reports',

@@ -1,5 +1,5 @@
 from enum import StrEnum, auto
-from pydantic import BaseModel, Field, NonNegativeInt, AliasPath, AliasChoices
+from pydantic import BaseModel, Field, NonNegativeInt, AliasPath, AliasChoices, ConfigDict
 from typing import Literal, Set, Union, Optional
 from pydantic.alias_generators import to_camel
 
@@ -74,6 +74,17 @@ class ChannelResponse(BaseModel):
         alias=channel_alias_path(ChannelPartType.SNIPPET, "description"),
     )
 
+
+
+class ChannelOverviewRequest(MediaRequest):
+
+    data: Set[Literal["view_count", "comment_count", "like_count", "dislike_count", "estimated_minutes_watched", "average_view_duration", "subscribers_gained", "subscribers_lost"]] = Field(description="the data the user wishes to see")
+
+
+    @property
+    def requested_fields(self) -> str:
+        formatted_fields = [to_camel(field.replace('_count', 's')) for field in self.data]
+        return ",".join(formatted_fields)
 
 
 

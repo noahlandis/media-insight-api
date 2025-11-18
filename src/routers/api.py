@@ -11,7 +11,7 @@ import json
 from authlib.integrations.base_client.errors import OAuthError
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from src.models import ChannelRequest, ChannelResponse
+from src.models import ChannelRequest, ChannelResponse, ChannelOverviewRequest
 
 router = APIRouter(
     prefix="/api"
@@ -37,8 +37,13 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
         # result = await get_channel_overview(oauth.google, google_session)
         # print(result)
 
-        result = await get_channel_overview_analytics(oauth.google, google_session)
-        print(result)
+        channel = ChannelOverviewRequest.model_validate({"data": ["view_count", "comment_count", "subscribers_gained"]})
+        print(channel)
+        print(channel.requested_fields)
+
+
+        # result = await get_channel_overview_analytics(oauth.google, google_session)
+        # print(result)
 
         # stats = result['items'][0]['statistics']
         # channel = ChannelResponse.model_validate(result)
