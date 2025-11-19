@@ -11,7 +11,7 @@ import json
 from authlib.integrations.base_client.errors import OAuthError
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from src.models import ChannelRequest, ChannelResponse, ChannelOverviewRequest
+from src.models import ChannelRequest, ChannelResponse, ChannelOverviewRequest, ChannelOverviewResponse
 
 router = APIRouter(
     prefix="/api"
@@ -37,22 +37,26 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
         # result = await get_channel_overview(oauth.google, google_session)
         # print(result)
 
-        channel = ChannelOverviewRequest.model_validate({"data": ["view_count", "comment_count", "subscribers_gained"]})
-        print(channel)
-        print(channel.requested_fields)
+        # channel = ChannelOverviewRequest.model_validate({"data": ["view_count", "comment_count", "subscribers_gained"]})
+        # print(channel)
+        # print(channel.requested_fields)
 
 
         # result = await get_channel_overview_analytics(oauth.google, google_session)
         # print(result)
+        # channel_response = ChannelOverviewResponse.model_validate(result)
+        # print("channel response")
+        # print(channel_response)
 
         # stats = result['items'][0]['statistics']
-        # channel = ChannelResponse.model_validate(result)
-        # print(channel)
+        # channel = ChannelRequest.model_validate({"data": ["name", "view_count"]})
+        # print(channel.part)
+
         # print(overview['items'][0]['snippet'])
-        # result = await agent.run('How many views does my channel have and when was my channel created', deps=AgentDeps(redis, oauth, session_key))
+        result = await agent.run('How many views does my channel have and how many likes does my channel have', deps=AgentDeps(redis, oauth, session_key))
         # # for msg in result.all_messages():
         # #     print("MSG:", msg)
-        # print(result.output)
+        print(result.output)
 
 
     except OAuthError as e:

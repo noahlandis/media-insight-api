@@ -7,7 +7,7 @@ import redis
 from src.config.oauth_manager import OAuthManager
 from pydantic import BaseModel, ConfigDict
 import datetime
-from src.models import ChannelRequest, MediaRequest, ChannelResponse
+from src.models import ChannelRequest, MediaRequest, ChannelResponse, ChannelOverviewRequest, ChannelOverviewResponse
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 _config = get_settings()
@@ -69,6 +69,37 @@ async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest)
     payload = result.json()
     return ChannelResponse.model_validate(payload)
 
+
+@agent.tool(require_parameter_descriptions=True)
+async def get_channel_overview(ctx: RunContext[AgentDeps], request: ChannelOverviewRequest) -> ChannelOverviewResponse:  
+    """Returns the requested data for the user's youtube channel.
+
+    Args:
+        request: Filters and options for the channel stats, including visibility scopes.
+    """
+    session = await ctx.deps.redis.json().get(ctx.deps.session_key)
+    google = session.get("google")
+    result = await ctx.deps.oauth.google.get(
+        'https://youtubeanalytics.googleapis.com/v2/reports',
+        params={
+            'ids': 'channel==MINE',
+            'startDate': '2005-10-01',
+            'endDate': '2025-11-11',
+            "metrics": request.metrics,
+        },
+        token=google
+    )
+
+    payload = result.json()
+
+    if not payload.get("rows"):
+        return {}
+
+    headers = [h["name"] for h in payload["columnHeaders"]]
+    row = payload["rows"][0]
+    result_table = dict(zip(headers, row))
+    
+    return ChannelOverviewResponse.model_validate(result_table)
 
 
 def print_schema(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:

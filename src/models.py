@@ -26,7 +26,7 @@ class ChannelRequest(MediaRequest):
 
     @property
     def part(self) -> str:
-        return ",".join({CHANNEL_PART[field] for field in self.data})
+        return ",".join(CHANNEL_PART[field] for field in self.data)
 
 
 
@@ -74,17 +74,45 @@ class ChannelResponse(BaseModel):
         alias=channel_alias_path(ChannelPartType.SNIPPET, "description"),
     )
 
+ANALYTICS_FIELD_MAPPING = {
+    "view_count": "views",
+    "comment_count": "comments",
+    "like_count": "likes",
+    "dislike_count": "dislikes",
+    "estimated_minutes_watched": "estimatedMinutesWatched",
+    "average_view_duration": "averageViewDuration",
+    "subscribers_gained": "subscribersGained",
+    "subscribers_lost": "subscribersLost",
+}
 
 
 class ChannelOverviewRequest(MediaRequest):
 
-    data: Set[Literal["view_count", "comment_count", "like_count", "dislike_count", "estimated_minutes_watched", "average_view_duration", "subscribers_gained", "subscribers_lost"]] = Field(description="the data the user wishes to see")
-
+    # data: Set[Literal[ANALYTICS_FIELD_MAPPING.keys()]] = Field(description="the data the user wishes to see")
+    data: Set[Literal[*tuple(ANALYTICS_FIELD_MAPPING.keys())]] = Field(description="the data the user wishes to see")
 
     @property
-    def requested_fields(self) -> str:
-        formatted_fields = [to_camel(field.replace('_count', 's')) for field in self.data]
-        return ",".join(formatted_fields)
+    def metrics(self) -> str:
+        return ",".join(ANALYTICS_FIELD_MAPPING[field] for field in self.data)
+
+class ChannelOverviewResponse(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=lambda field_name: ANALYTICS_FIELD_MAPPING[field_name]
+    )
+    view_count: Optional[NonNegativeInt] = Field(description="the number of views the channel has", default=None)
+    comment_count: Optional[NonNegativeInt] = Field(description="the number of comments the channel has", default=None)
+    like_count: Optional[NonNegativeInt] = Field(description="the number of likes the channel has", default=None)
+    dislike_count: Optional[NonNegativeInt] = Field(description="the number of dislikes the channel has", default=None)
+    estimated_minutes_watched: Optional[NonNegativeInt] = Field(description="the channel's estimated watch time in minutes", default=None)
+    average_view_duration: Optional[NonNegativeInt] = Field(description="the channel's average view duration in minutes", default=None)
+    subscribers_gained: Optional[NonNegativeInt] = Field(description="the number of subscribers the channel has gained", default=None)
+    subscribers_lost: Optional[NonNegativeInt] = Field(description="the number of subscribers the channel has lost", default=None)
+
+
+
+
+
+
 
 
 
