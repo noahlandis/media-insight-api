@@ -10,8 +10,10 @@ from src.services.youtube import get_channel_overview, get_channel_stats, get_vi
 import json
 from authlib.integrations.base_client.errors import OAuthError
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+from pydantic_ai.models.test import TestModel
 
-from src.models import ChannelRequest, ChannelResponse, ChannelOverviewRequest, ChannelOverviewResponse
+from src.models.channel_public_stats import ChannelPublicStatsRequest, ChannelPublicStatsResponse
+from src.models.channel_analytics import ChannelAnalyticsRequest, ChannelAnalyticsResponse
 
 router = APIRouter(
     prefix="/api"
@@ -53,9 +55,17 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
         # print(channel.part)
 
         # print(overview['items'][0]['snippet'])
-        result = await agent.run('How many views does my channel have and how many likes does my channel have', deps=AgentDeps(redis, oauth, session_key))
+        # test_model = TestModel()
+
+        # result = await agent.run('How many comments does my channel have', deps=AgentDeps(redis, oauth, session_key), model=test_model)
+        # print(test_model.last_model_request_parameters.function_tools)
+
         # # for msg in result.all_messages():
         # #     print("MSG:", msg)
+
+
+        result = await agent.run('How many subscribers does my channel have and how many public views does it have', deps=AgentDeps(redis, oauth, session_key))
+
         print(result.output)
 
 

@@ -7,8 +7,10 @@ import redis
 from src.config.oauth_manager import OAuthManager
 from pydantic import BaseModel, ConfigDict
 import datetime
-from src.models import ChannelRequest, MediaRequest, ChannelResponse, ChannelOverviewRequest, ChannelOverviewResponse
 from pydantic_ai.models.function import AgentInfo, FunctionModel
+
+from src.models.channel_public_stats import ChannelPublicStatsRequest, ChannelPublicStatsResponse
+from src.models.channel_analytics import ChannelAnalyticsRequest, ChannelAnalyticsResponse
 
 _config = get_settings()
 
@@ -47,36 +49,43 @@ agent = Agent(
     ),
     deps_type=str,
     instructions=(
-        "Use the functions to provide insights about the user's social media accounts."
-        "Do not ask for parameters that have default values."
-        "Never ask for channel IDs or channel names - the tools automatically use the authenticated account."
+        """
+        Use the tools to answer qquestions about the user's youtube channel. 
+        
+        Do not ask for parameters that have default values.
+        
+        Never ask for channel IDs or channel names - the tools automatically use the authenticated account.
+
+        Here are examples of correct tool usage:
+
+        - "How many subscribers do I have?"
+            → get_channel_public_stats({"data": ["subscriber_count"]})
+        
+        - "How many views does my channel have from public videos only"
+            → get_channel_public_stats({"data": ["public_view_count"]})
+        
+        - "When was my channel created and how many videos do i have"
+            → get_channel_public_stats({"data": ["published_at", "video_count"]})
+
+        - "How many views does my channel have"
+            → get_channel_analytics({"data": ["total_view_count"]})
+        """
     ),
     retries=0,
 )
 
 # agent = Agent()
 
-@agent.tool(require_parameter_descriptions=True)
-async def get_channel_stats(ctx: RunContext[AgentDeps], request: ChannelRequest) -> ChannelResponse:  
-    """Returns the requested data for the user's youtube channel.
-
-    Args:
-        request: Filters and options for the channel stats, including visibility scopes.
-    """
+@agent.tool
+async def get_channel_public_stats(ctx: RunContext[AgentDeps], request: ChannelPublicStatsRequest) -> ChannelPublicStatsResponse:  
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
     google = session.get("google")
     result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': request.part}, token=google)
     payload = result.json()
-    return ChannelResponse.model_validate(payload)
+    return ChannelPublicStatsResponse.model_validate(payload)
 
-
-@agent.tool(require_parameter_descriptions=True)
-async def get_channel_overview(ctx: RunContext[AgentDeps], request: ChannelOverviewRequest) -> ChannelOverviewResponse:  
-    """Returns the requested data for the user's youtube channel.
-
-    Args:
-        request: Filters and options for the channel stats, including visibility scopes.
-    """
+@agent.tool
+async def get_channel_analytics(ctx: RunContext[AgentDeps], request: ChannelAnalyticsRequest) -> ChannelAnalyticsResponse:  
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
     google = session.get("google")
     result = await ctx.deps.oauth.google.get(
@@ -99,7 +108,7 @@ async def get_channel_overview(ctx: RunContext[AgentDeps], request: ChannelOverv
     row = payload["rows"][0]
     result_table = dict(zip(headers, row))
     
-    return ChannelOverviewResponse.model_validate(result_table)
+    return ChannelAnalyticsResponse.model_validate(result_table)
 
 
 def print_schema(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
