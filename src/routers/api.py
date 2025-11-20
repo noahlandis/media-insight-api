@@ -35,39 +35,9 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_session = google_record[0]
 
     try:
-        # await agent.run('hello', model=FunctionModel(print_schema))
-        # result = await get_channel_overview(oauth.google, google_session)
-        # print(result)
-
-        # channel = ChannelOverviewRequest.model_validate({"data": ["view_count", "comment_count", "subscribers_gained"]})
-        # print(channel)
-        # print(channel.requested_fields)
-
-
-        # result = await get_channel_overview_analytics(oauth.google, google_session)
-        # print(result)
-        # channel_response = ChannelOverviewResponse.model_validate(result)
-        # print("channel response")
-        # print(channel_response)
-
-        # stats = result['items'][0]['statistics']
-        # channel = ChannelRequest.model_validate({"data": ["name", "view_count"]})
-        # print(channel.part)
-
-        # print(overview['items'][0]['snippet'])
-        # test_model = TestModel()
-
-        # result = await agent.run('How many comments does my channel have', deps=AgentDeps(redis, oauth, session_key), model=test_model)
-        # print(test_model.last_model_request_parameters.function_tools)
-
-        # # for msg in result.all_messages():
-        # #     print("MSG:", msg)
-
-
-        result = await agent.run('How many subscribers does my channel have and how many public views does it have. how many comments', deps=AgentDeps(redis, oauth, session_key))
-
-        print(result.output)
-
+        stripped_prompt = promptRequest.prompt.strip() # remove leading and trailing whitespace before passing it to LLM
+        result = await agent.run(stripped_prompt, deps=AgentDeps(redis, oauth, session_key))
+        return {"result": result.output}
 
     except OAuthError as e:
         if e.error == "invalid_grant":
@@ -78,79 +48,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
                 status_code=401,
                 detail="Your Google connection has expired or been revoked. Please reconnect your account.",
             )
-    print()
-    # print("channel stats data api")
-    # await get_channel_stats(oauth.google, google_session)
-    # print()
-
-    # await get_videos(oauth.google, google_session)
-    # print()
-
-    # print("get video count playlist api")
-    # await get_video_count_playlist_api(oauth.google, google_session)
-    # print()
-    # print("get video details")
-    # videos = await get_video_details(oauth.google, google_session)
-    # print()
-    # print("channel overview analytics api")
-    # await get_channel_overview_analytics(oauth.google, google_session)
-    # print()
-
-    # print("top viewed video ids analytics api")
-    # await get_top_viewed_video_ids_analytics(oauth.google, google_session)
-
-    # print("PLAYLIST ITEMS API")
-    # playlist_items_videos = await get_videos(oauth.google, google_session)
-    # print()
-    # print()
-    # print()
-    # print()
-    # print("Showing all public videos")
-    # search_items_videos = await get_public_videos_sort_test(oauth.google, google_session)
-
-    # print()
-
-
-    # print()
-    # print("GET VIDEOS SORT")
-    # search_items_videos = await get_videos_sort(oauth.google, google_session, 'viewCount')
-    # print()
-
-
-
-
-
-    # print(promptRequest.prompt)
-
-
-    # Run the agent
-    # success_number = 18  
-    # result = await agent.run('Launch a salad')
-    # print(result.output)  
-    # #> True
-
-    # print("get yt likes")
-    # result = await agent.run('Show me my Youtube Channel Stats', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
-
-    # print("get yt video count")
-    # # result = await agent.run('Show me how many videos i have on my channel', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
-
-    # print("get yt comments")
-    # result = await agent.run('Show me my Youtube comments', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
-
-    # print("get reddit karm")
-    # result = await agent.run('Show me my Reddit karma', deps=AgentDeps(redis, oauth, session_key))
-    # print(result.output)
-
     
-
-
-    # result = await agent.run('Launch a potato')
-    # print(result.output)
-    #> False
 
 
 
