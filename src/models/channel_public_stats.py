@@ -30,7 +30,7 @@ def channel_alias_path(part: ChannelPartType, field_name: str) -> AliasPath:
 
 
 class ChannelPublicStatsRequest(BaseModel):
-    data: Set[Literal["name", "description", "published_at", "video_count", "public_view_count", "subscriber_count"]] = Field(description="the data the user wishes to see")
+    data: Set[Literal[*tuple(CHANNEL_PART.keys())]] = Field(description="the data the user wishes to see")
 
     @property
     def part(self) -> str:
