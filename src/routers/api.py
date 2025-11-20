@@ -64,7 +64,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
         # #     print("MSG:", msg)
 
 
-        result = await agent.run('How many subscribers does my channel have and how many public views does it have', deps=AgentDeps(redis, oauth, session_key))
+        result = await agent.run('How many subscribers does my channel have and how many public views does it have. how many comments', deps=AgentDeps(redis, oauth, session_key))
 
         print(result.output)
 
