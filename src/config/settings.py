@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
-from functools import lru_cache
 
 class Settings(BaseSettings):
     google_client_id: SecretStr

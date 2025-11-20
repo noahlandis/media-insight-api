@@ -1,13 +1,10 @@
-from pydantic_ai import Agent, RunContext, Tool, ToolDefinition, ModelMessage, ModelResponse, TextPart
+from pydantic_ai import Agent, RunContext
 from src.dependencies import get_settings
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from dataclasses import dataclass
 import redis
 from src.config.oauth_manager import OAuthManager
-from pydantic import BaseModel, ConfigDict
-import datetime
-from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from src.models.channel_public_stats import ChannelPublicStatsRequest, ChannelPublicStatsResponse
 from src.models.channel_analytics import ChannelAnalyticsRequest, ChannelAnalyticsResponse

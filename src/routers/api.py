@@ -2,16 +2,10 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from src.dependencies import get_redis, get_session_key, get_settings, get_oauth_manager
 from pydantic import BaseModel, StringConstraints
 from typing import Annotated
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
 from src.config.oauth_manager import OAuthManager
 from src.config.agent import agent, AgentDeps
-import json
 from authlib.integrations.base_client.errors import OAuthError
-from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from src.models.channel_public_stats import ChannelPublicStatsRequest, ChannelPublicStatsResponse
-from src.models.channel_analytics import ChannelAnalyticsRequest, ChannelAnalyticsResponse
 
 router = APIRouter(
     prefix="/api"

@@ -1,7 +1,5 @@
-from enum import StrEnum, auto
-from pydantic import BaseModel, Field, NonNegativeInt, AliasPath, AliasChoices, ConfigDict
-from typing import Literal, Set, Union, Optional
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field, NonNegativeInt, ConfigDict
+from typing import Literal, Set, Optional
 
 ANALYTICS_FIELD_MAPPING = {
     "total_view_count": "views",

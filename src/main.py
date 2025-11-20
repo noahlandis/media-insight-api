@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 import logfire
 logfire.configure()
 logfire.instrument_pydantic_ai()

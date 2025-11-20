@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client import OAuth, OAuthError
+from authlib.integrations.starlette_client import OAuthError
 from src.config.settings import Settings
 from src.config.oauth_manager import OAuthManager
 from enum import StrEnum, auto
 from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
-import json
 from src.utils import session_key
 
 
@@ -19,10 +18,10 @@ class Platform(StrEnum):
     REDDIT = auto()
 
 @router.get("/{platform}")
-async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager)):
+async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), settings: Settings = Depends(get_settings)):
     client = oauth.create_client(platform)
     if client is None:
-        return RedirectResponse(f"{frontend_url}?error=unknown_provider")
+        return RedirectResponse(f"{settings.frontend_url}?error=unknown_provider")
     redirect_uri = request.url_for("auth_callback", platform=platform)
     return await client.authorize_redirect(request, redirect_uri)
 
@@ -33,7 +32,7 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
 
     try:
         provider_response = await client.authorize_access_token(request)
-    except OAuthError as e:
+    except OAuthError:
         return RedirectResponse(f"{frontend_url}?error=oauth_failed")
 
 

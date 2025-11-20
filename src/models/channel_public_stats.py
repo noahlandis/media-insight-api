@@ -1,6 +1,6 @@
 from enum import StrEnum, auto
-from pydantic import BaseModel, Field, NonNegativeInt, AliasPath, AliasChoices, ConfigDict
-from typing import Literal, Set, Union, Optional
+from pydantic import BaseModel, Field, NonNegativeInt, AliasPath
+from typing import Literal, Set, Optional
 from pydantic.alias_generators import to_camel
 
 class ChannelPartType(StrEnum):
