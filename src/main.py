@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 import logfire
-logfire.configure()
-logfire.instrument_pydantic_ai()
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers import auth, api
@@ -9,6 +7,8 @@ from src.dependencies import get_settings
 import redis.asyncio as redis
 from contextlib import asynccontextmanager
 
+logfire.configure()
+logfire.instrument_pydantic_ai()
 
 _config = get_settings()
 
