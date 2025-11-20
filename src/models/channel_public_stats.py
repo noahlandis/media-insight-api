@@ -1,7 +1,9 @@
 from enum import StrEnum, auto
-from pydantic import BaseModel, Field, NonNegativeInt, AliasPath
-from typing import Literal, Set, Optional
+from typing import Literal, Optional, Set
+
+from pydantic import AliasPath, BaseModel, Field, NonNegativeInt
 from pydantic.alias_generators import to_camel
+
 
 class ChannelPartType(StrEnum):
     SNIPPET = auto()

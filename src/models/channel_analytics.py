@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, NonNegativeInt, ConfigDict
-from typing import Literal, Set, Optional
+from typing import Literal, Optional, Set
+
+from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
 
 ANALYTICS_FIELD_MAPPING = {
     "total_view_count": "views",

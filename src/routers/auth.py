@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client import OAuthError
-from src.config.settings import Settings
-from src.config.oauth_manager import OAuthManager
-from enum import StrEnum, auto
-from src.dependencies import get_settings, get_redis, get_oauth_manager
 import secrets
-from src.utils import session_key
+from enum import StrEnum, auto
 
+from authlib.integrations.starlette_client import OAuthError
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
+
+from src.config.oauth_manager import OAuthManager
+from src.config.settings import Settings
+from src.dependencies import get_oauth_manager, get_redis, get_settings
+from src.utils import session_key
 
 router = APIRouter(
     prefix="/auth"

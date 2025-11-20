@@ -1,7 +1,10 @@
-from authlib.integrations.starlette_client import OAuth
-from src.config.settings import Settings
-from redis.asyncio import Redis
 from typing import Optional
+
+from authlib.integrations.starlette_client import OAuth
+from redis.asyncio import Redis
+
+from src.config.settings import Settings
+
 
 class OAuthManager:
     def __init__(self, settings: Settings, redis: Optional[Redis] = None):

@@ -1,11 +1,13 @@
-from fastapi import FastAPI
-import logfire
-from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-from src.routers import auth, api
-from src.dependencies import get_settings
-import redis.asyncio as redis
 from contextlib import asynccontextmanager
+
+import logfire
+import redis.asyncio as redis
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+
+from src.dependencies import get_settings
+from src.routers import api, auth
 
 logfire.configure()
 logfire.instrument_pydantic_ai()

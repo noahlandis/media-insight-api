@@ -1,13 +1,20 @@
+from dataclasses import dataclass
+
+import redis
 from pydantic_ai import Agent, RunContext
-from src.dependencies import get_settings
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
-from dataclasses import dataclass
-import redis
-from src.config.oauth_manager import OAuthManager
 
-from src.models.channel_public_stats import ChannelPublicStatsRequest, ChannelPublicStatsResponse
-from src.models.channel_analytics import ChannelAnalyticsRequest, ChannelAnalyticsResponse
+from src.config.oauth_manager import OAuthManager
+from src.dependencies import get_settings
+from src.models.channel_analytics import (
+    ChannelAnalyticsRequest,
+    ChannelAnalyticsResponse,
+)
+from src.models.channel_public_stats import (
+    ChannelPublicStatsRequest,
+    ChannelPublicStatsResponse,
+)
 
 _config = get_settings()
 

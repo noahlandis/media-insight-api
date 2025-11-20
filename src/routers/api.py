@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from src.dependencies import get_redis, get_session_key, get_settings, get_oauth_manager
-from pydantic import BaseModel, StringConstraints
 from typing import Annotated
-from src.config.oauth_manager import OAuthManager
-from src.config.agent import agent, AgentDeps
-from authlib.integrations.base_client.errors import OAuthError
 
+from authlib.integrations.base_client.errors import OAuthError
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, StringConstraints
+
+from src.config.agent import AgentDeps, agent
+from src.config.oauth_manager import OAuthManager
+from src.dependencies import get_oauth_manager, get_redis, get_session_key, get_settings
 
 router = APIRouter(
     prefix="/api"

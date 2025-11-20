@@ -1,8 +1,11 @@
-from src.config.settings import Settings
-from src.config.oauth_manager import OAuthManager
-from fastapi import Request, Depends, status, HTTPException
 from functools import lru_cache
+
+from fastapi import Depends, HTTPException, Request, status
+
+from src.config.oauth_manager import OAuthManager
+from src.config.settings import Settings
 from src.utils import session_key
+
 
 @lru_cache
 def get_settings() -> Settings:
