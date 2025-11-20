@@ -22,25 +22,6 @@ class AgentDeps:
     oauth: OAuthManager
     session_key: str
 
-# async def filter_out_tools_by_name(
-#     ctx: RunContext[AgentDeps], tool_defs: list[ToolDefinition]
-# ) -> list[ToolDefinition] | None:
-#     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
-#     google = session.get("google")
-#     reddit = session.get("reddit")
-
-#     allowed_tools = []
-#     for tool_def in tool_defs:
-#         if "youtube" in tool_def.name and not google:
-#             continue
-#         if "reddit" in tool_def.name and not reddit:
-#             continue
-#         allowed_tools.append(tool_def)
-    
-#     print("allowed tools")
-#     for tool_def in allowed_tools:
-#         print(tool_def.name)
-#     return allowed_tools
 
 agent = Agent(  
     model = OpenAIChatModel(
@@ -79,8 +60,6 @@ agent = Agent(
     retries=0,
 )
 
-# agent = Agent()
-
 @agent.tool
 async def get_channel_public_stats(ctx: RunContext[AgentDeps], request: ChannelPublicStatsRequest) -> ChannelPublicStatsResponse:  
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
@@ -97,8 +76,8 @@ async def get_channel_analytics(ctx: RunContext[AgentDeps], request: ChannelAnal
         'https://youtubeanalytics.googleapis.com/v2/reports',
         params={
             'ids': 'channel==MINE',
-            'startDate': '2005-10-01',
-            'endDate': '2025-11-11',
+            'startDate': '2005-10-01', # to do: parameterize
+            'endDate': '2025-11-11', # to do: parameterize
             "metrics": request.metrics,
         },
         token=google
@@ -114,58 +93,3 @@ async def get_channel_analytics(ctx: RunContext[AgentDeps], request: ChannelAnal
     result_table = dict(zip(headers, row))
     
     return ChannelAnalyticsResponse.model_validate(result_table)
-
-
-def print_schema(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-    tool = info.function_tools[0]
-    print(tool.description)
-    #> Get me foobar.
-    print(tool.parameters_json_schema)
-    """
-    {
-        'additionalProperties': False,
-        'properties': {
-            'a': {'description': 'apple pie', 'type': 'integer'},
-            'b': {'description': 'banana cake', 'type': 'string'},
-            'c': {
-                'additionalProperties': {'items': {'type': 'number'}, 'type': 'array'},
-                'description': 'carrot smoothie',
-                'type': 'object',
-            },
-        },
-        'required': ['a', 'b', 'c'],
-        'type': 'object',
-    }
-    """
-    return ModelResponse(parts=[TextPart('foobar')])
-
-
-# @agent.tool
-# async def youtube_video_count(ctx: RunContext[AgentDeps]):  
-#     """Returns number of youtube videos"""
-#     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
-#     google = session.get("google")
-#     result = await ctx.deps.oauth.google.get('youtube/v3/channels', params={'mine': True, 'part': 'snippet,statistics'}, token=google)
-#     return result.json()
-
-
-
-# @agent.tool
-# async def youtube_comments(ctx: RunContext[AgentDeps]) -> str:  
-#     """Returns youtube comments"""
-#     return 'Here are your youtube comments'
-
-
-
-# @agent.tool
-# async def reddit_karma(ctx: RunContext[AgentDeps]) -> str:  
-#     """Returns reddit karma"""
-#     return 'Here is your reddit karma'
-
-
-# @agent.tool
-# async def reddit_posts(ctx: RunContext[AgentDeps]) -> str:  
-#     """Returns reddit posts"""
-#     return 'Here is your reddit posts'
-
-
