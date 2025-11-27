@@ -38,7 +38,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
             await redis.delete(google_session.get('refresh_token'))
             await redis.json().delete(session_key, ".google")
             raise HTTPException(
-                status_code=401,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Your Google connection has expired or been revoked. Please reconnect your account.",
             )
     
