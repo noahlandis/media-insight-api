@@ -20,12 +20,12 @@ class ChannelAnalyticsRequest(BaseModel):
     data: Set[Literal[*tuple(ANALYTICS_FIELD_MAPPING.keys())]] = Field(description="the data the user wishes to see")
 
     start_date: Optional[date] = Field(
-        description="start date for the analytics window ",
+        description="start date for the analytics window",
         default=date(2005, 10, 1),
     )
 
     end_date: Optional[date] = Field(
-        description="end date for the analytics window ",
+        description="end date for the analytics window",
         default_factory=date.today,
     )
 
