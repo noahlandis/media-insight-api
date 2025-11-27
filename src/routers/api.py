@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 class PromptRequest(BaseModel):
-    prompt: Annotated[str, StringConstraints(max_length=100)]
+    prompt: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100, min_length=1)]
 
 
 @router.get("/connected_platforms", status_code=status.HTTP_200_OK)
@@ -28,8 +28,7 @@ async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings),
     google_session = google_record[0]
 
     try:
-        stripped_prompt = promptRequest.prompt.strip() # remove leading and trailing whitespace before passing it to LLM
-        result = await agent.run(stripped_prompt, deps=AgentDeps(redis, oauth, session_key))
+        result = await agent.run(promptRequest.prompt, deps=AgentDeps(redis, oauth, session_key))
         return {"result": result.output}
 
     except OAuthError as e:
