@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from datetime import date
 
 import redis
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
-from datetime import date
+
 from src.config.oauth_manager import OAuthManager
 from src.dependencies import get_settings
 from src.models.channel_analytics import (
@@ -71,7 +72,7 @@ def add_current_date() -> str:
     
     Example: "How many views did I get this year?
     """
-    return f"today's date is {date.today().isoformat()}"
+    return f"Today's date is {date.today().isoformat()}"
 
 @agent.tool
 async def get_channel_public_stats(ctx: RunContext[AgentDeps], request: ChannelPublicStatsRequest) -> ChannelPublicStatsResponse:  

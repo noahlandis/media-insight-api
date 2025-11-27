@@ -1,7 +1,7 @@
+from datetime import date
 from typing import Literal, Optional, Set
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
-from datetime import date
 
 ANALYTICS_FIELD_MAPPING = {
     "total_view_count": "views",

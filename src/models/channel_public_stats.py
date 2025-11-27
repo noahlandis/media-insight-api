@@ -1,6 +1,7 @@
+from datetime import datetime
 from enum import StrEnum, auto
 from typing import Literal, Optional, Set
-from datetime import datetime
+
 from pydantic import AliasPath, BaseModel, Field, NonNegativeInt
 from pydantic.alias_generators import to_camel
 
