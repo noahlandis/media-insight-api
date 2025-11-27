@@ -80,8 +80,8 @@ async def get_channel_analytics(ctx: RunContext[AgentDeps], request: ChannelAnal
         'https://youtubeanalytics.googleapis.com/v2/reports',
         params={
             'ids': 'channel==MINE',
-            'startDate': '2005-10-01', # to do: parameterize
-            'endDate': '2025-11-11', # to do: parameterize
+            'startDate': request.start_date,
+            'endDate': request.end_date,
             "metrics": request.metrics,
         },
         token=google

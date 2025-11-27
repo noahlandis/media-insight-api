@@ -1,6 +1,7 @@
 from typing import Literal, Optional, Set
 
 from pydantic import BaseModel, ConfigDict, Field, NonNegativeInt
+from datetime import date
 
 ANALYTICS_FIELD_MAPPING = {
     "total_view_count": "views",
@@ -17,6 +18,16 @@ ANALYTICS_FIELD_MAPPING = {
 class ChannelAnalyticsRequest(BaseModel):
 
     data: Set[Literal[*tuple(ANALYTICS_FIELD_MAPPING.keys())]] = Field(description="the data the user wishes to see")
+
+    start_date: Optional[date] = Field(
+        description="start date for the analytics window ",
+        default=date(2005, 10, 1),
+    )
+
+    end_date: Optional[date] = Field(
+        description="end date for the analytics window ",
+        default_factory=date.today,
+    )
 
     @property
     def metrics(self) -> str:
