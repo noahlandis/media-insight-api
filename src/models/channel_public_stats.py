@@ -42,33 +42,33 @@ class ChannelPublicStatsRequest(BaseModel):
 
 
 class ChannelPublicStatsResponse(BaseModel):
-    public_view_count: Optional[NonNegativeInt] = Field(description="the number of views the channel has from public videos only", default=None, alias=channel_alias_path(ChannelPartType.STATISTICS, "viewCount"))
+    public_view_count: NonNegativeInt | None = Field(description="the number of views the channel has from public videos only", default=None, alias=channel_alias_path(ChannelPartType.STATISTICS, "viewCount"))
 
-    subscriber_count: Optional[NonNegativeInt] = Field(
+    subscriber_count: NonNegativeInt | None = Field(
         description="the number of subscribers the channel has",
         default=None,
         alias=channel_alias_path(ChannelPartType.STATISTICS, "subscriber_count"),
     )
 
-    video_count: Optional[NonNegativeInt] = Field(
+    video_count: NonNegativeInt | None = Field(
         description="the number of videos the channel has uploaded",
         default=None,
         alias=channel_alias_path(ChannelPartType.STATISTICS, "video_count"),
     )
 
-    published_at: Optional[datetime] = Field(
+    published_at: datetime | None = Field(
         description="the date the channel was created",
         default=None,
         alias=channel_alias_path(ChannelPartType.SNIPPET, "published_at"),
     )
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         description="the name of the channel",
         default=None,
         alias=channel_alias_path(ChannelPartType.SNIPPET, "title"),
     )
 
-    description: Optional[str] = Field(
+    description: str | None = Field(
         description="the description of the channel",
         default=None,
         alias=channel_alias_path(ChannelPartType.SNIPPET, "description"),
