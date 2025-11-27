@@ -4,7 +4,7 @@ import redis
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
-
+from datetime import date
 from src.config.oauth_manager import OAuthManager
 from src.dependencies import get_settings
 from src.models.channel_analytics import (
@@ -63,6 +63,15 @@ agent = Agent(
     ),
     retries=0,
 )
+
+@agent.instructions
+def add_current_date() -> str:
+    """
+    Add's date context at runtime so date windows are accurate when relative window is requested (rather than explicitly mentioning the start/end dates).
+    
+    Example: "How many views did I get this year?
+    """
+    return f"today's date is {date.today().isoformat()}"
 
 @agent.tool
 async def get_channel_public_stats(ctx: RunContext[AgentDeps], request: ChannelPublicStatsRequest) -> ChannelPublicStatsResponse:  
