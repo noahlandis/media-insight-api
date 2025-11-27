@@ -23,12 +23,12 @@ async def get_connected_platforms(session_key = Depends(get_session_key), redis 
 
 
 @router.post("/prompt", status_code=status.HTTP_200_OK)
-async def prompt(promptRequest: PromptRequest, settings = Depends(get_settings), redis = Depends(get_redis), session_key = Depends(get_session_key), oauth: OAuthManager = Depends(get_oauth_manager)):
+async def prompt(prompt_request: PromptRequest, settings = Depends(get_settings), redis = Depends(get_redis), session_key = Depends(get_session_key), oauth: OAuthManager = Depends(get_oauth_manager)):
     google_record = await redis.json().get(session_key, '$.google')
     google_session = google_record[0]
 
     try:
-        result = await agent.run(promptRequest.prompt, deps=AgentDeps(redis, oauth, session_key))
+        result = await agent.run(prompt_request.prompt, deps=AgentDeps(redis, oauth, session_key))
         return {"result": result.output}
 
     except OAuthError as e:
