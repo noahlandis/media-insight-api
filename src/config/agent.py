@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 import redis
 from pydantic_ai import Agent, RunContext
@@ -64,6 +65,15 @@ agent = Agent(
     retries=0,
 )
 
+@agent.instructions
+def add_current_date() -> str:
+    """
+    Add's date context at runtime so date windows are accurate when relative window is requested (rather than explicitly mentioning the start/end dates).
+    
+    Example: "How many views did I get this year?
+    """
+    return f"Today's date is {date.today().isoformat()}"
+
 @agent.tool
 async def get_channel_public_stats(ctx: RunContext[AgentDeps], request: ChannelPublicStatsRequest) -> ChannelPublicStatsResponse:  
     session = await ctx.deps.redis.json().get(ctx.deps.session_key)
@@ -80,8 +90,8 @@ async def get_channel_analytics(ctx: RunContext[AgentDeps], request: ChannelAnal
         'https://youtubeanalytics.googleapis.com/v2/reports',
         params={
             'ids': 'channel==MINE',
-            'startDate': '2005-10-01', # to do: parameterize
-            'endDate': '2025-11-11', # to do: parameterize
+            'startDate': request.start_date,
+            'endDate': request.end_date,
             "metrics": request.metrics,
         },
         token=google

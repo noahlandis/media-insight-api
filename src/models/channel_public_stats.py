@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import StrEnum, auto
 from typing import Literal, Optional, Set
 
@@ -55,7 +56,7 @@ class ChannelPublicStatsResponse(BaseModel):
         alias=channel_alias_path(ChannelPartType.STATISTICS, "video_count"),
     )
 
-    published_at: Optional[str] = Field(
+    published_at: Optional[datetime] = Field(
         description="the date the channel was created",
         default=None,
         alias=channel_alias_path(ChannelPartType.SNIPPET, "published_at"),
