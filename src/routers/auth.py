@@ -18,23 +18,28 @@ class Platform(StrEnum):
     GOOGLE = auto()
     REDDIT = auto()
 
+class Source(StrEnum):
+    WEB = auto()
+    MOBILE = auto()
+
 @router.get("/{platform}")
-async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), settings: Settings = Depends(get_settings)):
+async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), settings: Settings = Depends(get_settings), source: Source = Source.WEB):
+    client_origin_url = settings.web_url if source == Source.WEB else settings.mobile_url
     client = oauth.create_client(platform)
     if client is None:
-        return RedirectResponse(f"{settings.web_url}?error=unknown_provider")
+        return RedirectResponse(f"{client_origin_url}?error=unknown_provider")
     redirect_uri = request.url_for("auth_callback", platform=platform)
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis)):
-    web_url = settings.web_url
+async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis), source: Source = Source.WEB):
+    client_origin_url = settings.web_url if source == Source.WEB else settings.mobile_url
     client = oauth.create_client(platform)
 
     try:
         provider_response = await client.authorize_access_token(request)
     except OAuthError:
-        return RedirectResponse(f"{web_url}?error=oauth_failed")
+        return RedirectResponse(f"{client_origin_url}?error=oauth_failed")
 
 
     if 'session_id' in request.session:
@@ -51,4 +56,4 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
         await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
         # we need to create an inverse mapping since the starlette update_token function isn't session scoped. Without this, we wouldn't know which redis record to update when the token is refreshed
         await redis.set(provider_response.get("refresh_token"), session_key(sid))
-    return RedirectResponse(web_url)
+    return RedirectResponse(client_origin_url)
