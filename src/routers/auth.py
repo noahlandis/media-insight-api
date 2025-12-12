@@ -24,11 +24,13 @@ async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depen
     if client is None:
         return RedirectResponse(f"{client_origin_url}?error=unknown_provider")
     redirect_uri = request.url_for("auth_callback", platform=platform)
+    request.session['client_origin_url'] = client_origin_url
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis), client_origin_url: str = Depends(get_client_origin_url)):
+async def auth_callback(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis)):
     client = oauth.create_client(platform)
+    client_origin_url = request.session.get('client_origin_url')
 
     try:
         provider_response = await client.authorize_access_token(request)
