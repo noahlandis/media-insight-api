@@ -32,6 +32,9 @@ class Source(StrEnum):
     WEB = auto()
     MOBILE = auto()
 
-def get_client_origin_url(source: Source = Source.WEB, settings: Settings = Depends(get_settings)) -> str:
+def get_source(source: Source = Source.WEB) -> Source:
+    return source
+
+def get_client_origin_url(source: Source = Depends(get_source), settings: Settings = Depends(get_settings)) -> str:
     # since we're using the Source ENUM, we can assume that if it's not web, the source will be mobile (as other values will throw an error)
     return settings.web_url if source == Source.WEB else settings.mobile_url

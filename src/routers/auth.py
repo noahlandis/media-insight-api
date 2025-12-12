@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from src.config.oauth_manager import OAuthManager
-from src.dependencies import get_oauth_manager, get_redis, get_client_origin_url
+from src.dependencies import get_oauth_manager, get_redis, get_client_origin_url, get_source, Source
 from src.utils import session_key
 
 router = APIRouter(
@@ -19,21 +19,28 @@ class Platform(StrEnum):
 
 
 @router.get("/{platform}")
-async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), client_origin_url: str = Depends(get_client_origin_url)):
+async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), client_origin_url: str = Depends(get_client_origin_url), source: Source = Depends(get_source)):
     client = oauth.create_client(platform)
 
     if client is None:
         return RedirectResponse(f"{client_origin_url}?error=unknown_provider")
 
     redirect_uri = request.url_for("auth_callback", platform=platform)
-    request.session['client_origin_url'] = client_origin_url # store the client_origin_url so we can access it in the callback
+
+    # store the client_origin_url and the source so we can access them in the callback
+    request.session['client_origin_context'] = {
+        'source': source,
+        'client_origin_url': client_origin_url
+    }
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
 async def auth_callback(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis)):
     client = oauth.create_client(platform)
-    
-    client_origin_url = request.session.pop('client_origin_url')
+
+
+    client_origin_context = request.session.pop('client_origin_context')
+    client_origin_url = client_origin_context.get('client_origin_url')
 
     try:
         provider_response = await client.authorize_access_token(request)
@@ -54,5 +61,8 @@ async def auth_callback(platform: Platform, request: Request, oauth: OAuthManage
             await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
             # we need to create an inverse mapping since the starlette update_token function isn't session scoped. Without this, we wouldn't know which redis record to update when the token is refreshed
             await redis.set(provider_response.get("refresh_token"), session_key(sid))
-        
+    
+    if client_origin_context.get('source') == Source.MOBILE:
+        client_origin_url += f'?session_id={sid}'
+
     return RedirectResponse(client_origin_url)
