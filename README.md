@@ -87,7 +87,7 @@ Initiates OAuth authentication for the specified platform.
 
 #### `GET /auth/{platform}/callback`
 Handles OAuth provider callbacks after user authorization.
-- **Response**: Redirects to frontend URL with session cookie set
+- **Response**: Redirects to client with session id set
 
 ### API Routes (Data Access)
 
