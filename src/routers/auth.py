@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
 from src.config.oauth_manager import OAuthManager
-from src.config.settings import Settings
-from src.dependencies import get_oauth_manager, get_redis, get_settings
+from src.dependencies import get_oauth_manager, get_redis, get_client_origin_url
 from src.utils import session_key
 
 router = APIRouter(
@@ -18,13 +17,9 @@ class Platform(StrEnum):
     GOOGLE = auto()
     REDDIT = auto()
 
-class Source(StrEnum):
-    WEB = auto()
-    MOBILE = auto()
 
 @router.get("/{platform}")
-async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), settings: Settings = Depends(get_settings), source: Source = Source.WEB):
-    client_origin_url = settings.web_url if source == Source.WEB else settings.mobile_url
+async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), client_origin_url: str = Depends(get_client_origin_url)):
     client = oauth.create_client(platform)
     if client is None:
         return RedirectResponse(f"{client_origin_url}?error=unknown_provider")
@@ -32,8 +27,7 @@ async def auth(platform: Platform, request: Request, oauth: OAuthManager = Depen
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/{platform}/callback")
-async def auth_callback(platform: Platform, request: Request, settings: Settings = Depends(get_settings), oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis), source: Source = Source.WEB):
-    client_origin_url = settings.web_url if source == Source.WEB else settings.mobile_url
+async def auth_callback(platform: Platform, request: Request, oauth: OAuthManager = Depends(get_oauth_manager), redis = Depends(get_redis), client_origin_url: str = Depends(get_client_origin_url)):
     client = oauth.create_client(platform)
 
     try:
@@ -47,13 +41,14 @@ async def auth_callback(platform: Platform, request: Request, settings: Settings
     else:
         sid = secrets.token_urlsafe(32)
         request.session['session_id'] = sid
-
-    print(provider_response)
        
-    if platform == Platform.REDDIT:
-        await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token")}})
-    else:
-        await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
-        # we need to create an inverse mapping since the starlette update_token function isn't session scoped. Without this, we wouldn't know which redis record to update when the token is refreshed
-        await redis.set(provider_response.get("refresh_token"), session_key(sid))
+    match platform: # We don't need a default case here because the Platform ENUM enforces that 'platform' will either be reddit or google
+        case Platform.REDDIT:
+            await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token")}})
+
+        case Platform.GOOGLE:
+            await redis.json().merge(session_key(sid), "$", {platform: {"access_token": provider_response.get("access_token"), "refresh_token": provider_response.get("refresh_token"), "expires_at": provider_response.get("expires_at")}})
+            # we need to create an inverse mapping since the starlette update_token function isn't session scoped. Without this, we wouldn't know which redis record to update when the token is refreshed
+            await redis.set(provider_response.get("refresh_token"), session_key(sid))
+        
     return RedirectResponse(client_origin_url)
